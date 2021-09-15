@@ -1,17 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "titan",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Titan",
+  "description": "Client side mod for Project Eden to supplement our resource pack Saturn",
   "authors": [
-    "Me!"
+    "GriffinCodes"
   ],
-  "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
-  },
 
   "license": "CC0-1.0",
   "icon": "assets/modid/icon.png",
@@ -19,11 +15,11 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "gg.projecteden.titan.Titan"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "titan.mixins.json"
   ],
 
   "depends": {

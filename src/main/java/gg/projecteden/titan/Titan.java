@@ -1,8 +1,8 @@
-package net.fabricmc.example;
+package gg.projecteden.titan;
 
 import net.fabricmc.api.ModInitializer;
 
-public class ExampleMod implements ModInitializer {
+public class Titan implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
