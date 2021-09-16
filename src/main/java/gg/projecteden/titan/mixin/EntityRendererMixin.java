@@ -4,6 +4,7 @@ import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.util.math.Vec3i;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,10 +17,10 @@ public class EntityRendererMixin {
 
 	@Inject(at = @At("HEAD"), method = "shouldRender", cancellable = true)
 	private void shouldRender(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> info) {
-		if (!(entity instanceof ArmorStandEntity armorStand))
+		if (!(entity instanceof ArmorStandEntity || entity instanceof ItemFrameEntity))
 			return;
 
-		if (armorStand.getBlockPos().getSquaredDistance(new Vec3i(x, y, z)) <= ALWAYS_RENDER_WITHIN * ALWAYS_RENDER_WITHIN)
+		if (entity.getBlockPos().getSquaredDistance(new Vec3i(x, y, z)) <= ALWAYS_RENDER_WITHIN * ALWAYS_RENDER_WITHIN)
 			info.setReturnValue(true);
 	}
 
