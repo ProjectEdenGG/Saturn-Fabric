@@ -6,17 +6,19 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
+import static gg.projecteden.titan.Utils.isOnEden;
+
 public class Titan implements ModInitializer {
+	public static final String PREFIX = String.format("[%s] ", Titan.class.getSimpleName());
 	public static Logger LOGGER = LogManager.getLogger();
 
 	public static void log(String message, Object... objects) {
-		LOGGER.log(Level.INFO, String.format(message, objects));
+		LOGGER.log(Level.INFO, String.format(PREFIX + message, objects));
 	}
 
 	@NotNull
@@ -33,18 +35,6 @@ public class Titan implements ModInitializer {
 	public void onInitialize() {
 		Saturn.update();
 		Events.register();
-	}
-
-	public static boolean isOnEden() {
-		final ClientPlayNetworkHandler handler = MinecraftClient.getInstance().getNetworkHandler();
-		if (handler == null)
-			return false;
-
-		final String address = handler.getConnection().getAddress().toString();
-		if (address == null)
-			return false;
-
-		return address.contains("projecteden.gg") || address.contains("51.222.11.194");
 	}
 
 	public static void reportVersions() {

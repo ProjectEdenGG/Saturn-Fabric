@@ -2,6 +2,7 @@ package gg.projecteden.titan.events;
 
 import gg.projecteden.titan.Saturn;
 import gg.projecteden.titan.Titan;
+import gg.projecteden.titan.Utils;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -31,7 +32,8 @@ public class ResourcePackEvents {
 
 			@Override
 			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-				prepareExecutor.execute(Saturn::update);
+				if (Utils.isOnEden())
+					prepareExecutor.execute(Saturn::update);
 				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
 			}
 		});

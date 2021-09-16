@@ -15,7 +15,7 @@ public class Saturn {
 
 	public static void update() {
 		try {
-			if (!path.toFile().exists())
+			if (!isInstalled())
 				return;
 
 			Titan.log("Updating Saturn");
@@ -23,6 +23,10 @@ public class Saturn {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static boolean isInstalled() {
+		return path.toFile().exists();
 	}
 
 	public static String version() {
