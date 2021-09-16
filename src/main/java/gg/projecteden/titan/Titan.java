@@ -12,12 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 public class Titan implements ModInitializer {
 	public static Logger LOGGER = LogManager.getLogger();
 
@@ -29,6 +23,10 @@ public class Titan implements ModInitializer {
 	public static ModContainer container() {
 		return FabricLoader.getInstance().getModContainer(Titan.class.getSimpleName().toLowerCase())
 				.orElseThrow(() -> new RuntimeException("Titan not loaded"));
+	}
+
+	public static String version() {
+		return Titan.container().getMetadata().getVersion().getFriendlyString();
 	}
 
 	@Override
@@ -58,12 +56,8 @@ public class Titan implements ModInitializer {
 			if (client == null || client.player == null)
 				return;
 
-			String titanVersion = Titan.container().getMetadata().getVersion().getFriendlyString();
-			String saturnVersion = null;
-
-			final Path saturnVersionFile = Paths.get(URI.create(client.getResourcePackDir().toURI() + "/Saturn/.git/ORIG_HEAD"));
-			if (saturnVersionFile.toFile().exists())
-				saturnVersion = Files.readAllLines(saturnVersionFile, StandardCharsets.UTF_8).get(0);
+			String titanVersion = Titan.version();
+			String saturnVersion = Saturn.version();
 
 			String command = "/resourcepack versions";
 			if (!Strings.isNullOrEmpty(titanVersion))
