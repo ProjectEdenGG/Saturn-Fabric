@@ -30,6 +30,9 @@ public class Saturn {
 	}
 
 	public static String version() {
+		if (!isInstalled())
+			return null;
+
 		return git("rev-parse HEAD");
 	}
 
