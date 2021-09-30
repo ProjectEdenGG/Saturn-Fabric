@@ -2,6 +2,7 @@ package gg.projecteden.titan;
 
 import com.google.common.base.Strings;
 import gg.projecteden.titan.events.Events;
+import gg.projecteden.titan.network.ServerChannel;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -49,13 +50,16 @@ public class Titan implements ModInitializer {
 			String titanVersion = Titan.version();
 			String saturnVersion = Saturn.version();
 
-			String command = "/resourcepack versions";
+			String json = "{";
 			if (!Strings.isNullOrEmpty(titanVersion))
-				command += " --titan=" + titanVersion;
+				json += "\"titan\":\"" + titanVersion + "\"";
+			if (!Strings.isNullOrEmpty(titanVersion) && !Strings.isNullOrEmpty(saturnVersion))
+				json += ",";
 			if (!Strings.isNullOrEmpty(saturnVersion))
-				command += " --saturn=" + saturnVersion;
+				json += "\"saturn\":\"" + saturnVersion + "\"";
+			json += "}";
 
-			client.player.sendChatMessage(command);
+			ServerChannel.send(json);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
