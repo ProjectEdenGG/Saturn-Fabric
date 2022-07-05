@@ -6,7 +6,8 @@
   "name": "Titan",
   "description": "Client side mod for Project Eden to supplement our resource pack Saturn",
   "authors": [
-    "GriffinCodes"
+    "GriffinCodes",
+    "Blast"
   ],
 
   "license": "CC0-1.0",
@@ -16,6 +17,9 @@
   "entrypoints": {
     "main": [
       "gg.projecteden.titan.Titan"
+    ],
+    "modmenu": [
+      "gg.projecteden.titan.Config"
     ]
   },
   "mixins": [
@@ -27,8 +31,5 @@
     "fabric": "*",
     "minecraft": "~1.19",
     "java": ">=17"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

@@ -1,20 +1,19 @@
 package gg.projecteden.titan;
 
-import com.google.common.base.Strings;
 import gg.projecteden.titan.events.Events;
-import gg.projecteden.titan.network.ServerChannel;
+import gg.projecteden.titan.saturn.Saturn;
+import gg.projecteden.titan.saturn.SaturnUpdater;
+import gg.projecteden.titan.update.TitanUpdater;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import static gg.projecteden.titan.Utils.isOnEden;
-
 public class Titan implements ModInitializer {
+	public static final String MOD_ID = "titan";
 	public static final String PREFIX = String.format("[%s] ", Titan.class.getSimpleName());
 	public static Logger LOGGER = LogManager.getLogger();
 
@@ -34,35 +33,13 @@ public class Titan implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		Saturn.update();
+		TitanUpdater.checkForUpdates();
+		Config.load();
+		if (Saturn.mode != SaturnUpdater.Mode.TEXTURE_RELOAD)
+			Saturn.update();
 		Events.register();
-	}
-
-	public static void reportVersions() {
-		try {
-			if (!isOnEden())
-				return;
-
-			final MinecraftClient client = MinecraftClient.getInstance();
-			if (client == null || client.player == null)
-				return;
-
-			String titanVersion = Titan.version();
-			String saturnVersion = Saturn.version();
-
-			String json = "{";
-			if (!Strings.isNullOrEmpty(titanVersion))
-				json += "\"titan\":\"" + titanVersion + "\"";
-			if (!Strings.isNullOrEmpty(titanVersion) && !Strings.isNullOrEmpty(saturnVersion))
-				json += ",";
-			if (!Strings.isNullOrEmpty(saturnVersion))
-				json += "\"saturn\":\"" + saturnVersion + "\"";
-			json += "}";
-
-			ServerChannel.send(json);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+		if (Saturn.manageStatus && !Saturn.enabledByDefault)
+			Saturn.disable();
 	}
 
 }
