@@ -22,9 +22,9 @@ public class Saturn {
 	public static final String URI_STRING = FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn";
 	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
 	public static boolean manageStatus = false;
+	public static SaturnUpdater updater;
 	public static final Path PATH = Paths.get(URI.create(URI_STRING));
 	public static final Path DOT_GIT_PATH = Paths.get(URI.create(URI_STRING + "/.git"));
-	public static SaturnUpdater updater;
 	public static boolean enabledByDefault = true;
 
 	public static void update() {
