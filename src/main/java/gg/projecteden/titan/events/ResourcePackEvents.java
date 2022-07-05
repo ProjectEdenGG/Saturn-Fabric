@@ -2,9 +2,8 @@ package gg.projecteden.titan.events;
 
 import gg.projecteden.titan.network.ServerChannel;
 import gg.projecteden.titan.saturn.Saturn;
-import gg.projecteden.titan.Titan;
-import gg.projecteden.titan.Utils;
 import gg.projecteden.titan.saturn.SaturnUpdater;
+import gg.projecteden.titan.update.TitanUpdater;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -25,12 +24,15 @@ public class ResourcePackEvents {
 	public static void register() {
 		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {
 			if (isOnEden()) {
+				Saturn.env = handler.getConnection().getAddress().toString().contains("25565") ? SaturnUpdater.Env.PROD : SaturnUpdater.Env.TEST;
 				if (Saturn.manageStatus)
 					Saturn.enable();
 				ServerChannel.reportToEden();
 			}
 		}));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> {
+			TitanUpdater.checkForUpdates();
+			Saturn.env = SaturnUpdater.Env.PROD;
 			if (Saturn.manageStatus)
 				Saturn.disable();
 		}));
@@ -48,13 +50,17 @@ public class ResourcePackEvents {
 
 			@Override
 			public void reload(ResourceManager manager) {
+				for (Runnable runnable : Saturn.queuedProcesses)
+					runnable.run();
+				Saturn.queuedProcesses.clear();
 				ServerChannel.reportToEden();
 			}
 
 			@Override
 			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-				if (isOnEden() && (Saturn.updater == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD)))
-					prepareExecutor.execute(Saturn::update);
+				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD))) {
+					Saturn.queueProcess(Saturn::update);
+				}
 				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
 			}
 		});

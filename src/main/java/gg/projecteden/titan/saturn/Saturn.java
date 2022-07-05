@@ -3,45 +3,44 @@ package gg.projecteden.titan.saturn;
 import gg.projecteden.titan.Config;
 import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.network.ServerChannel;
-import gg.projecteden.titan.update.GitResponse;
+import lombok.Getter;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourcePackManager;
 
-import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-
-import static gg.projecteden.titan.Utils.getGitResponse;
 
 public class Saturn {
 
 	public static String version;
-	public static SaturnUpdater updater;
+	@Getter
+	private static SaturnUpdater updater;
 	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
+	public static SaturnUpdater.Env env = SaturnUpdater.Env.PROD;
+	public static boolean hardReset = true;
 	public static boolean manageStatus = false;
-	public static final String URI_STRING = FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn";
-	public static final Path PATH = Paths.get(URI.create(URI_STRING));
-	public static final Path DOT_GIT_PATH = Paths.get(URI.create(URI_STRING + "/.git"));
+	public static final Path PATH = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/Saturn");
+	public static final Path DOT_GIT_PATH = PATH.resolve(".git");
 	public static boolean enabledByDefault = true;
+
+	public static List<Runnable> queuedProcesses = new ArrayList<>();
 
 	public static void update() {
 		if (updater == null)
 			if (DOT_GIT_PATH.toFile().exists() && Config.isGitInstalled())
-				updater = SaturnUpdater.GIT;
+				setUpdater(SaturnUpdater.GIT);
 			else
-				updater = SaturnUpdater.ZIP_DOWNLOAD;
+				setUpdater(SaturnUpdater.ZIP_DOWNLOAD);
 
-		String commitVersion = getGitResponse("Saturn/commits/main", GitResponse.Saturn.class).getSha();
 		try {
 			if (!isInstalled()) {
 				Titan.log("Installing Saturn");
-				Titan.log(updater.install(commitVersion));
-			} else if (!commitVersion.equals(updater.version())) {
+				Titan.log(updater.install());
+			} else if (updater.checkForUpdates()) {
 				Titan.log("Updating Saturn");
-				Titan.log(updater.update(commitVersion));
+				Titan.log(updater.update());
 			}
 			ServerChannel.reportToEden();
 		} catch (Exception ex) {
@@ -58,6 +57,22 @@ public class Saturn {
 			return null;
 
 		return updater.version();
+	}
+
+	public static boolean checkForUpdates() {
+		return updater.checkForUpdates();
+	}
+
+	public static void setUpdater(SaturnUpdater updater) {
+		Saturn.updater = updater;
+		if (updater == SaturnUpdater.GIT && !DOT_GIT_PATH.toFile().exists()) {
+			queueProcess(() -> Titan.log(updater.install()));
+			MinecraftClient.getInstance().reloadResources();
+		}
+	}
+
+	public static void queueProcess(Runnable runnable) {
+		queuedProcesses.add(runnable);
 	}
 
 	public static void enable() {

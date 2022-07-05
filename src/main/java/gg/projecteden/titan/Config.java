@@ -17,11 +17,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.JsonHelper;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -109,7 +105,7 @@ public class Config implements ModMenuApi {
 		ConfigEntryBuilder entryBuilder = ConfigEntryBuilder.create();
 
 		ConfigCategory saturn = builder.getOrCreateCategory(Text.literal("Saturn"));
-		saturn.addEntry(entryBuilder.startEnumSelector(Text.literal("Update Method"), SaturnUpdater.class, Saturn.updater)
+		saturn.addEntry(entryBuilder.startEnumSelector(Text.literal("Update Method"), SaturnUpdater.class, Saturn.getUpdater())
 								.setEnumNameProvider(val -> Text.literal(camelCase(val.name())))
 								.setErrorSupplier(val -> {
 									if (val == SaturnUpdater.GIT && !gitInstalled) {
@@ -127,9 +123,15 @@ public class Config implements ModMenuApi {
 										Titan.log("The Update Method was set to Git, but git does not appear to be installed. " +
 															"Defaulting back to zip download.");
 									}
-									Saturn.updater = val;
+									Saturn.setUpdater(val);
 								})
 								.build());
+
+		if (Saturn.getUpdater() == SaturnUpdater.GIT) {
+			saturn.addEntry(entryBuilder.startBooleanToggle(Text.literal("Hard Reset"), Saturn.hardReset)
+					                .setSaveConsumer(val -> Saturn.hardReset = val)
+					                .build());
+		}
 
 		saturn.addEntry(entryBuilder.startEnumSelector(Text.literal("Update Instances"), SaturnUpdater.Mode.class, Saturn.mode)
 								.setEnumNameProvider(val -> Text.literal(camelCase(val.name())))
@@ -162,9 +164,10 @@ public class Config implements ModMenuApi {
 	public static void save() {
 		JsonObject jsonObject = new JsonObject();
 
-		jsonObject.addProperty("saturn-updater", Saturn.updater.name().toLowerCase());
+		jsonObject.addProperty("saturn-updater", Saturn.getUpdater().name().toLowerCase());
+		jsonObject.addProperty("saturn-hard-reset", Saturn.hardReset);
 		jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
-		jsonObject.addProperty("saturn-version", Saturn.updater.version());
+		jsonObject.addProperty("saturn-version", Saturn.getUpdater().version());
 		jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);
 		jsonObject.addProperty("saturn-enabled-default", Saturn.enabledByDefault);
 		storeJson(CONFIG_FILE, jsonObject);
@@ -173,7 +176,9 @@ public class Config implements ModMenuApi {
 	public static void load() {
 		JsonObject json = getJsonObject(CONFIG_FILE);
 		if (json.has("saturn-updater"))
-			Saturn.updater = SaturnUpdater.valueOf(JsonHelper.getString(json, "saturn-updater").toUpperCase());
+			Saturn.setUpdater(SaturnUpdater.valueOf(JsonHelper.getString(json, "saturn-updater").toUpperCase()));
+		if (json.has("saturn-hard-reset"))
+			Saturn.hardReset = JsonHelper.getBoolean(json, "saturn-hard-reset");
 		if (json.has("saturn-update-mode"))
 			Saturn.mode = SaturnUpdater.Mode.valueOf(JsonHelper.getString(json, "saturn-update-mode").toUpperCase());
 		if (json.has("saturn-version"))

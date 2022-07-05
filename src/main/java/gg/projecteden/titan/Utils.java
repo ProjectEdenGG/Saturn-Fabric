@@ -32,6 +32,7 @@ public class Utils {
 		if (address == null)
 			return false;
 
+
 		return address.contains("projecteden.gg") || address.contains("51.222.11.194");
 	}
 
@@ -45,11 +46,14 @@ public class Utils {
 	}
 
 	public static <T> T getGitResponse(String get, Class<T> type) {
-		return new Gson().fromJson(
-				bash("curl -A 'Googlebot/2.1 (+http://www.google.com/bot.html)' \\ " +
-						     "-H \"Accept: application/vnd.github+json\" \\ " +
-						     "https://api.github.com/repos/ProjectEdenGG/" + get,
-						FabricLoader.getInstance().getGameDir().toFile()), type);
+		try {
+			return new Gson().fromJson(
+					bash("curl -A 'Googlebot/2.1 (+http://www.google.com/bot.html)' \\ " +
+							     "-H \"Accept: application/vnd.github+json\" \\ " +
+							     "https://api.github.com/repos/ProjectEdenGG/" + get,
+							FabricLoader.getInstance().getGameDir().toFile()), type);
+		} catch (Exception ignore) { } // Rate limit for unauthenticated git api requests
+		return null;
 	}
 
 }
