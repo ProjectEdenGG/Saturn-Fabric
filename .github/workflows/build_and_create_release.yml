@@ -47,5 +47,5 @@ jobs:
         with:
           upload_url: ${{ steps.create-new-release.outputs.upload_url }}
           asset_path: ./build/libs/titan-${{ steps.vars.outputs.sha_short }}.jar
-          asset_name: titan-${{ steps.vars.outputs.sha_short }}.jar
+          asset_name: titan.jar
           asset_content_type: jar
