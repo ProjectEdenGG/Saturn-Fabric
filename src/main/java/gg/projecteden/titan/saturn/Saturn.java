@@ -19,22 +19,27 @@ import static gg.projecteden.titan.Utils.getGitResponse;
 public class Saturn {
 
 	public static String version;
-	public static SaturnUpdater updater = SaturnUpdater.ZIP_DOWNLOAD;
+	public static final String URI_STRING = FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn";
 	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
 	public static boolean manageStatus = false;
-	public static final Path PATH = Paths.get(URI.create(FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn"));
+	public static final Path PATH = Paths.get(URI.create(URI_STRING));
+	public static final Path DOT_GIT_PATH = Paths.get(URI.create(URI_STRING + "/.git"));
+	public static SaturnUpdater updater;
 	public static boolean enabledByDefault = true;
 
 	public static void update() {
+		if (updater == null)
+			if (DOT_GIT_PATH.toFile().exists() && Config.isGitInstalled())
+				updater = SaturnUpdater.GIT;
+			else
+				updater = SaturnUpdater.ZIP_DOWNLOAD;
+
 		String commitVersion = getGitResponse("Saturn/commits/main", GitResponse.Saturn.class).getSha();
 		try {
 			if (!isInstalled()) {
-				Titan.log("Downloading Saturn");
-				Titan.log(updater.downloadFirst(commitVersion));
-				ServerChannel.reportToEden();
-				return;
-			}
-			if (!commitVersion.equals(updater.version())) {
+				Titan.log("Installing Saturn");
+				Titan.log(updater.install(commitVersion));
+			} else if (!commitVersion.equals(updater.version())) {
 				Titan.log("Updating Saturn");
 				Titan.log(updater.update(commitVersion));
 			}

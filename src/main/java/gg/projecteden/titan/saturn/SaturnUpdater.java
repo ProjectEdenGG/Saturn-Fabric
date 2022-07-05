@@ -6,7 +6,6 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
 
@@ -21,33 +20,30 @@ public enum SaturnUpdater {
 		}
 
 		@Override
-		public String update(String version) {
-			try {
-				FileUtils.copyURLToFile(new URL("https://cdn.projecteden.gg/ResourcePack.zip"), Paths.get(PATH + ".zip").toFile());
-			} catch (Exception ex) {
-				Titan.log("An error occurred while downloading Saturn:");
-				ex.printStackTrace();
-				return null;
-			}
-			try {
-				Titan.log("Unpacking...");
-				this.unzip();
-			} catch (Exception ex) {
-				Titan.log("An error occurred while unpacking Saturn:");
-				ex.printStackTrace();
-				return null;
-			}
-			Saturn.version = version;
-			Config.save();
-			return "Successfully updated Saturn";
+		public String install(String version) {
+			return update(version);
 		}
 
-		private void unzip() {
-			try (ZipFile zipFile = new ZipFile(PATH + ".zip")) {
-				zipFile.extractAll(PATH.toString());
-				zipFile.getFile().delete();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+		@Override
+		public String update(String version) {
+			try {
+				Titan.log("Updating Saturn via Zip Download");
+				FileUtils.copyURLToFile(new URL("https://cdn.projecteden.gg/ResourcePack.zip"), Paths.get(PATH + ".zip").toFile());
+				Titan.log("Unpacking...");
+
+				try (ZipFile zipFile = new ZipFile(PATH + ".zip")) {
+					PATH.toFile().delete();
+					zipFile.extractAll(PATH.toString());
+					zipFile.getFile().delete();
+				}
+
+				Saturn.version = version;
+				Config.save();
+				return "Successfully updated Saturn";
+			} catch (Exception ex) {
+				Titan.log("An error occurred while updating Saturn:");
+				ex.printStackTrace();
+				return null;
 			}
 		}
 	},
@@ -59,12 +55,13 @@ public enum SaturnUpdater {
 
 		@Override
 		public String update(String version) {
+			Titan.log("Updating Saturn via git");
 			return git("pull");
 		}
 
 		@Override
-		public String downloadFirst(String version) {
-			return git("clone git@github.com:ProjectEdenGG/Saturn.git");
+		public String install(String version) {
+			return git("clone https://github.com/ProjectEdenGG/Saturn.git");
 		}
 
 		@NotNull
@@ -77,9 +74,7 @@ public enum SaturnUpdater {
 
 	public abstract String update(String version);
 
-	public String downloadFirst(String version) {
-		return this.update(version);
-	}
+	public abstract String install(String version);
 
 	public enum Mode {
 		START_UP,

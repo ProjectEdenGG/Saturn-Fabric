@@ -8,6 +8,7 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
+import lombok.Getter;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -16,7 +17,11 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.JsonHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -32,6 +37,20 @@ public class Config implements ModMenuApi {
 	private final static Path TITAN_CONFIG_DIR = GAME_CONFIG_DIR.resolve(MOD_ID);
 
 	private final static File CONFIG_FILE = new File(configDir(), MOD_ID + ".json");
+
+	@Getter
+	private static boolean gitInstalled = false;
+
+	static {
+		checkGitInstalled();
+	}
+
+	private static void checkGitInstalled() {
+		try {
+			bash("git", PATH.toFile());
+			gitInstalled = true;
+		} catch (Exception ignore) {}
+	}
 
 	public static File configDir() {
 		File mapConfigDir = TITAN_CONFIG_DIR.toFile();
@@ -84,11 +103,8 @@ public class Config implements ModMenuApi {
 	}
 
 	public static Screen getConfigScreen(Screen parent) {
-		boolean gitCheck = false;
-		try {
-			gitCheck = !bash("git", PATH.toFile()).contains("is not recognized");
-		} catch (Exception ignore) { }
-		boolean gitInstalled = gitCheck;
+		checkGitInstalled();
+
 		ConfigBuilder builder = ConfigBuilder.create().setTitle(Text.literal("Titan Config"));
 		ConfigEntryBuilder entryBuilder = ConfigEntryBuilder.create();
 

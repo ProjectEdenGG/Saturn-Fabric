@@ -1,7 +1,6 @@
 package gg.projecteden.titan.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.update.TitanUpdater;
 import gg.projecteden.titan.update.UpdateStatus;
 import net.fabricmc.loader.api.FabricLoader;
@@ -58,7 +57,6 @@ public class TitleScreenMixin extends Screen {
 						if (ip.contains(ignored))
 							continue servers;
 					serverInfo = serverList.get(i);
-					Titan.log("Found existing ServerInfo for projecteden.gg at index %d", i);
 					break;
 				}
 			}
