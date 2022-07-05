@@ -19,10 +19,10 @@ import static gg.projecteden.titan.Utils.getGitResponse;
 public class Saturn {
 
 	public static String version;
-	public static final String URI_STRING = FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn";
+	public static SaturnUpdater updater;
 	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
 	public static boolean manageStatus = false;
-	public static SaturnUpdater updater;
+	public static final String URI_STRING = FabricLoader.getInstance().getGameDir().toUri() + "/resourcepacks/Saturn";
 	public static final Path PATH = Paths.get(URI.create(URI_STRING));
 	public static final Path DOT_GIT_PATH = Paths.get(URI.create(URI_STRING + "/.git"));
 	public static boolean enabledByDefault = true;
