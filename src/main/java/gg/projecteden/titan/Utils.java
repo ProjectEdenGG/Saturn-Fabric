@@ -52,7 +52,10 @@ public class Utils {
 							     "-H \"Accept: application/vnd.github+json\" \\ " +
 							     "https://api.github.com/repos/ProjectEdenGG/" + get,
 							FabricLoader.getInstance().getGameDir().toFile()), type);
-		} catch (Exception ignore) { } // Rate limit for unauthenticated git api requests
+		} catch (Exception ex) { // Rate limit for unauthenticated git api requests
+			Titan.log("An error occurred while accessing git data. Rate Limit reached?");
+			ex.printStackTrace();
+		}
 		return null;
 	}
 
