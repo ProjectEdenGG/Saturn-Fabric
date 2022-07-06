@@ -41,8 +41,11 @@ public class OptionsScreenMixin extends Screen {
 				mouseY);
 	};
 	ButtonWidget.PressAction action = button -> {
-		if (Saturn.checkForUpdates()) {
-			Saturn.queueProcess(Saturn::update);
+		if (updateAvailable) {
+			Saturn.queueProcess(() -> {
+				if (Saturn.update())
+					MinecraftClient.getInstance().reloadResources();
+			});
 			MinecraftClient.getInstance().reloadResources();
 		}
 	};

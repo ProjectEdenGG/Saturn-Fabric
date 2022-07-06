@@ -3,9 +3,13 @@ package gg.projecteden.titan;
 import com.google.gson.Gson;
 import joptsimple.internal.Strings;
 import lombok.SneakyThrows;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -45,14 +49,14 @@ public class Utils {
 	}
 
 	public static <T> T getGitResponse(String get, Class<T> type) {
-		try {
-			return new Gson().fromJson(
-					bash("curl -A 'Googlebot/2.1 (+http://www.google.com/bot.html)' \\ " +
-							     "-H \"Accept: application/vnd.github+json\" \\ " +
-							     "https://api.github.com/repos/ProjectEdenGG/" + get,
-							FabricLoader.getInstance().getGameDir().toFile()), type);
-		} catch (Exception ex) { // Rate limit for unauthenticated git api requests
-			Titan.log("An error occurred while accessing git data. Rate Limit reached?");
+		try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+			HttpGet request = new HttpGet("https://api.github.com/repos/ProjectEdenGG/" + get);
+			request.addHeader("Accept", "application/vnd.github+json");
+			request.addHeader("User-Agent", "Googlebot/2.1 (+http://www.google.com/bot.html)");
+			CloseableHttpResponse response = client.execute(request);
+			return new Gson().fromJson(EntityUtils.toString(response.getEntity()), type);
+		} catch (Throwable ex) {
+			Titan.log("An error occurred while checking git versioning. Rate limit reached?");
 			ex.printStackTrace();
 		}
 		return null;

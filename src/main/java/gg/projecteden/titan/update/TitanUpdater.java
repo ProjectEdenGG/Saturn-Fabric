@@ -63,6 +63,8 @@ public class TitanUpdater {
 		try {
 			TitanUpdater.getMostRecent(getGitResponse("Titan/releases", GitResponse.TitanRelease[].class));
 			if (latestRelease != null && !latestRelease.getSha().startsWith(Titan.version())) {
+				Titan.log(latestRelease.getSha());
+				Titan.log(Titan.version());
 				updateStatus = UpdateStatus.AVAILABLE;
 			}
 		} catch (Exception ignore) { } // Rate limit on unauthenticated git requests

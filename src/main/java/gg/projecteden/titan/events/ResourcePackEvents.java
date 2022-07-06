@@ -8,8 +8,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 
@@ -20,6 +23,14 @@ import static gg.projecteden.titan.Titan.MOD_ID;
 import static gg.projecteden.titan.Utils.isOnEden;
 
 public class ResourcePackEvents {
+
+	static final Text text = Text.literal("")
+			                  .append(Text.literal("[").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+			                  .formatted(Formatting.RESET)
+			                  .append(Text.literal("Titan").formatted(Formatting.YELLOW))
+			                  .append(Text.literal("]").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+			                  .formatted(Formatting.RESET)
+			                  .append(Text.literal(" Saturn was updated during your last textures reload!").formatted(Formatting.DARK_AQUA));
 
 	public static void register() {
 		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {
@@ -49,19 +60,21 @@ public class ResourcePackEvents {
 			}
 
 			@Override
-			public void reload(ResourceManager manager) {
-				for (Runnable runnable : Saturn.queuedProcesses)
-					runnable.run();
-				Saturn.queuedProcesses.clear();
-				ServerChannel.reportToEden();
+			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD))) {
+					Saturn.queueProcess(() -> {
+						if (Saturn.update()) {
+							MinecraftClient.getInstance().reloadResources();
+							MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
+							ServerChannel.reportToEden();
+						}
+					});
+				}
+				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
 			}
 
 			@Override
-			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD))) {
-					Saturn.queueProcess(Saturn::update);
-				}
-				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+			public void reload(ResourceManager manager) {
 			}
 		});
 	}

@@ -27,7 +27,7 @@ public class Saturn {
 
 	public static List<Runnable> queuedProcesses = new ArrayList<>();
 
-	public static void update() {
+	public static boolean update() {
 		if (updater == null)
 			if (DOT_GIT_PATH.toFile().exists() && Config.isGitInstalled())
 				setUpdater(SaturnUpdater.GIT);
@@ -42,10 +42,14 @@ public class Saturn {
 				Titan.log("Updating Saturn");
 				Titan.log(updater.update());
 			}
+			else {
+				return false;
+			}
 			ServerChannel.reportToEden();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		return true;
 	}
 
 	public static boolean isInstalled() {
@@ -74,8 +78,10 @@ public class Saturn {
 	public static void setUpdater(SaturnUpdater updater) {
 		Saturn.updater = updater;
 		if (updater == SaturnUpdater.GIT && !DOT_GIT_PATH.toFile().exists()) {
-			queueProcess(() -> Titan.log(updater.install()));
-			MinecraftClient.getInstance().reloadResources();
+			queueProcess(() -> {
+				Titan.log(updater.install());
+				MinecraftClient.getInstance().reloadResources();
+			});
 		}
 	}
 

@@ -3,9 +3,15 @@ package gg.projecteden.titan.saturn;
 import gg.projecteden.titan.Config;
 import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.update.GitResponse;
+import joptsimple.internal.Strings;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
@@ -37,12 +43,14 @@ public enum SaturnUpdater {
 				Titan.log("Unpacking...");
 
 				try (ZipFile zipFile = new ZipFile(PATH + ".zip")) {
-					PATH.toFile().delete();
+					FileUtils.deleteDirectory(PATH.toFile());
 					zipFile.extractAll(PATH.toString());
 					zipFile.getFile().delete();
 				}
 
-				Saturn.version = bash("curl " + String.format("https://cdn.projecteden.gg/SaturnVersion%s", Saturn.env.getSuffix()), PATH.toFile());
+				String newVersion = getServerVersion();
+				Titan.log("New version: " + newVersion);
+				Saturn.version = newVersion;
 				Config.save();
 				updateAvailable = false;
 				return "Successfully updated Saturn";
@@ -58,7 +66,11 @@ public enum SaturnUpdater {
 			if (updateAvailable)
 				return true;
 			try {
-				String serverVersion = bash("curl " + String.format("https://cdn.projecteden.gg/SaturnVersion%s", Saturn.env.getSuffix()), PATH.toFile());
+				if (Strings.isNullOrEmpty(version())) {
+					updateAvailable = true;
+					return true;
+				}
+				String serverVersion = getServerVersion();
 				if (!serverVersion.equals(version())) {
 					updateAvailable = true;
 					return true;
@@ -70,6 +82,18 @@ public enum SaturnUpdater {
 			}
 			return false;
 		}
+
+		private String getServerVersion() {
+			try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+				HttpGet request = new HttpGet(String.format("https://cdn.projecteden.gg/SaturnVersion%s", Saturn.env.getSuffix()));
+				CloseableHttpResponse response = client.execute(request);
+				return EntityUtils.toString(response.getEntity());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			return null;
+		}
+
 	},
 	GIT {
 		boolean updateAvailable;
@@ -109,7 +133,7 @@ public enum SaturnUpdater {
 				try {
 					String commitVersion = getGitResponse("Saturn/commits/main", GitResponse.Saturn.class).getSha();
 					String saturnVersion = Saturn.version();
-					updateAvailable = commitVersion != null && saturnVersion != null && !commitVersion.startsWith(saturnVersion);
+					updateAvailable = (commitVersion != null && saturnVersion != null && !commitVersion.startsWith(saturnVersion)) || Strings.isNullOrEmpty(saturnVersion);
 				} catch (Exception ignore) { } // Rate limit on unauthenticated git api requests
 			}
 			return updateAvailable;
