@@ -29,7 +29,6 @@ public class TitanUpdater {
 		Thread thread = new Thread(() -> {
 			GitResponse.TitanRelease.Asset asset = null;
 			for (GitResponse.TitanRelease.Asset _asset : latestRelease.assets) {
-				Titan.log(_asset.content_type, _asset.browser_download_url, _asset.name);
 				if (_asset.content_type.equals("jar")) {
 					asset = _asset;
 					break;

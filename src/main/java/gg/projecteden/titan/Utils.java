@@ -32,7 +32,6 @@ public class Utils {
 		if (address == null)
 			return false;
 
-
 		return address.contains("projecteden.gg") || address.contains("51.222.11.194");
 	}
 
