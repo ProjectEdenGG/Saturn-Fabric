@@ -1,5 +1,6 @@
 package gg.projecteden.titan.network;
 
+import gg.projecteden.titan.saturn.Saturn;
 import lombok.AllArgsConstructor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -19,7 +20,8 @@ public enum PluginMessageEvent {
 
 		@Override
 		public void onReceive() {
-			MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
+			if (Saturn.checkForUpdates())
+				MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
 		}
 
 	};
