@@ -54,7 +54,7 @@ public class OptionsScreenMixin extends Screen {
 	@Inject(method = "init", at = @At("RETURN"))
 	public void drawSaturnUpdateChecker(CallbackInfo ci) {
 		updateAvailable = Saturn.checkForUpdates();
-		saturnVersion = Saturn.version().substring(0, 7);
+		saturnVersion = Saturn.shortVersion();
 		this.addDrawableChild(new ButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, Text.of(""), action));
 		this.addDrawableChild(new TexturedButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, supplier, Text.of("Update Saturn")));
 		if (updateAvailable) {

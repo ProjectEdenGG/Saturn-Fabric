@@ -59,6 +59,14 @@ public class Saturn {
 		return updater.version();
 	}
 
+	public static String shortVersion() {
+		final String version = Saturn.version();
+		if (version == null)
+			return null;
+
+		return version.substring(0, Math.min(7, version.length()));
+	}
+
 	public static boolean checkForUpdates() {
 		return updater.checkForUpdates();
 	}
