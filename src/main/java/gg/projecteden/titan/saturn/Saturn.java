@@ -41,8 +41,7 @@ public class Saturn {
 			} else if (updater.checkForUpdates()) {
 				Titan.log("Updating Saturn");
 				Titan.log(updater.update());
-			}
-			else {
+			} else {
 				return false;
 			}
 			ServerChannel.reportToEden();

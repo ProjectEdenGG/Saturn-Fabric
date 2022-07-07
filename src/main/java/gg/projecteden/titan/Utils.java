@@ -44,8 +44,8 @@ public class Utils {
 			return text;
 
 		return Arrays.stream(text.replaceAll("_", " ").split(" "))
-				       .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
-				       .collect(Collectors.joining(" "));
+				.map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
+				.collect(Collectors.joining(" "));
 	}
 
 	public static <T> T getGitResponse(String get, Class<T> type) {

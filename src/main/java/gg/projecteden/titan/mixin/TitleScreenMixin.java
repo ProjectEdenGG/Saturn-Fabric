@@ -73,8 +73,7 @@ public class TitleScreenMixin extends Screen {
 					else
 						TitanUpdater.updateStatus = UpdateStatus.ERROR;
 				});
-			}
-			else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
+			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo);
 		};
 		this.addDrawableChild(new ButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, Text.of(""), action));

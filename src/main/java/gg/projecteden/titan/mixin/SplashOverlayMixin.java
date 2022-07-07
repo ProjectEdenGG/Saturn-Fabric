@@ -12,7 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SplashOverlay.class)
 public class SplashOverlayMixin {
 
-	@Shadow private float progress;
+	@Shadow
+	private float progress;
 
 	@Inject(method = "renderProgressBar", at = @At("RETURN"))
 	private void start(MatrixStack matrices, int minX, int minY, int maxX, int maxY, float opacity, CallbackInfo ci) {

@@ -10,13 +10,13 @@ import net.minecraft.util.Formatting;
 public enum PluginMessageEvent {
 	SATURN_UPDATE("saturn-update") {
 		final Text text = Text.literal("")
-				            .append(Text.literal("[").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
-				            .formatted(Formatting.RESET)
-				            .append(Text.literal("Titan").formatted(Formatting.YELLOW))
-				            .append(Text.literal("]").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
-				            .formatted(Formatting.RESET)
-				            .append(Text.literal(" An update for Saturn is available. ").formatted(Formatting.DARK_AQUA))
-		                    .append(Text.literal("Update in the Options menu.").formatted(Formatting.YELLOW));
+				.append(Text.literal("[").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+				.formatted(Formatting.RESET)
+				.append(Text.literal("Titan").formatted(Formatting.YELLOW))
+				.append(Text.literal("]").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+				.formatted(Formatting.RESET)
+				.append(Text.literal(" An update for Saturn is available. ").formatted(Formatting.DARK_AQUA))
+				.append(Text.literal("Update in the Options menu.").formatted(Formatting.YELLOW));
 
 		@Override
 		public void onReceive() {

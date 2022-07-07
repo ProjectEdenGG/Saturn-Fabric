@@ -25,12 +25,12 @@ import static gg.projecteden.titan.Utils.isOnEden;
 public class ResourcePackEvents {
 
 	static final Text text = Text.literal("")
-			                  .append(Text.literal("[").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
-			                  .formatted(Formatting.RESET)
-			                  .append(Text.literal("Titan").formatted(Formatting.YELLOW))
-			                  .append(Text.literal("]").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
-			                  .formatted(Formatting.RESET)
-			                  .append(Text.literal(" Saturn was updated during your last textures reload!").formatted(Formatting.DARK_AQUA));
+			.append(Text.literal("[").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+			.formatted(Formatting.RESET)
+			.append(Text.literal("Titan").formatted(Formatting.YELLOW))
+			.append(Text.literal("]").formatted(Formatting.DARK_GRAY, Formatting.BOLD))
+			.formatted(Formatting.RESET)
+			.append(Text.literal(" Saturn was updated during your last textures reload!").formatted(Formatting.DARK_AQUA));
 
 	public static void register() {
 		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {

@@ -9,7 +9,11 @@ import gg.projecteden.titan.saturn.SaturnUpdater;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.JsonHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Path;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
