@@ -19,7 +19,7 @@
       "gg.projecteden.titan.Titan"
     ],
     "modmenu": [
-      "gg.projecteden.titan.Config"
+      "gg.projecteden.titan.config.ModMenuImpl"
     ]
   },
   "mixins": [

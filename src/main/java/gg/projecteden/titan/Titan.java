@@ -1,5 +1,6 @@
 package gg.projecteden.titan;
 
+import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.events.Events;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;

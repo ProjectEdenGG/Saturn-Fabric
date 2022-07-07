@@ -1,7 +1,7 @@
 package gg.projecteden.titan.saturn;
 
-import gg.projecteden.titan.Config;
 import gg.projecteden.titan.Titan;
+import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.update.GitResponse;
 import joptsimple.internal.Strings;
 import net.fabricmc.loader.api.FabricLoader;
