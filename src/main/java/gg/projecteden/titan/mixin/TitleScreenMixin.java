@@ -63,7 +63,8 @@ public class TitleScreenMixin extends Screen {
 
 			TitleScreenMixin.serverInfo = serverInfo;
 		}
-		if (FabricLoader.getInstance().getModContainer("modmenu").isPresent())
+		boolean modMenu = FabricLoader.getInstance().getModContainer("modmenu").isPresent();
+		if (modMenu)
 			y -= spacingY;
 		ButtonWidget.PressAction action = button -> {
 			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE) {
@@ -78,6 +79,8 @@ public class TitleScreenMixin extends Screen {
 		};
 		this.addDrawableChild(new ButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, Text.of(""), action));
 		this.addDrawableChild(new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, tooltipSupplier, Text.of("Project Eden")));
+		if (!modMenu)
+			y -= (spacingY / 2);
 		int finalY = y;
 		if (TitanUpdater.updateStatus != UpdateStatus.NONE) {
 			this.addDrawable((matrices, mouseX, mouseY, delta) -> {
