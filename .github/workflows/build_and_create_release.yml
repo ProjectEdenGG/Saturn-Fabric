@@ -31,7 +31,17 @@ jobs:
         run: ./gradlew build --stacktrace
       - name: Set outputs
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "::set-output name=previous_tag::$(git describe --tags)"
+      - name: Delete previous tag/release
+        id: delete-release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true
+          tag_name: ${{ steps.vars.outputs.previous_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create-new-release
         uses: actions/create-release@v1
