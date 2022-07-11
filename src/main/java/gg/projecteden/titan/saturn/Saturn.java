@@ -47,6 +47,7 @@ public class Saturn {
 			ServerChannel.reportToEden();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			return false;
 		}
 		return true;
 	}
@@ -77,10 +78,8 @@ public class Saturn {
 	public static void setUpdater(SaturnUpdater updater) {
 		Saturn.updater = updater;
 		if (updater == SaturnUpdater.GIT && !DOT_GIT_PATH.toFile().exists()) {
-			queueProcess(() -> {
-				Titan.log(updater.install());
-				MinecraftClient.getInstance().reloadResources();
-			});
+			queueProcess(() -> Titan.log(updater.install()));
+			MinecraftClient.getInstance().reloadResources();
 		}
 	}
 

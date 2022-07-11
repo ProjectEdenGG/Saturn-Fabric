@@ -131,6 +131,8 @@ public enum SaturnUpdater {
 				return true;
 			else {
 				try {
+					if (!git("rev-parse --abbrev-ref HEAD").equals("main")) // Check local branch is main, or infinite loops
+						return false;
 					String commitVersion = getGitResponse("Saturn/commits/main", GitResponse.Saturn.class).getSha();
 					String saturnVersion = Saturn.version();
 					updateAvailable = (commitVersion != null && saturnVersion != null && !commitVersion.startsWith(saturnVersion)) || Strings.isNullOrEmpty(saturnVersion);

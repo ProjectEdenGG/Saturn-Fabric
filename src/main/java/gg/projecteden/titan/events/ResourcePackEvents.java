@@ -59,11 +59,17 @@ public class ResourcePackEvents {
 				return new Identifier(MOD_ID, "saturn");
 			}
 
+			long lastForcedReload = 0L;
+
 			@Override
 			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
 				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD))) {
 					Saturn.queueProcess(() -> {
 						if (Saturn.update()) {
+							long thisReload = System.currentTimeMillis(); // Cooldown on forced reload. Should hopefully solve infinite loops
+							if (thisReload - lastForcedReload < 30000)
+								return;
+							lastForcedReload = thisReload;
 							MinecraftClient.getInstance().reloadResources();
 							MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
 							ServerChannel.reportToEden();
