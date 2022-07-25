@@ -47,7 +47,6 @@ public class ServerChannel {
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.addProperty("titan", titanVersion);
 			jsonObject.addProperty("saturn", saturnVersion);
-			jsonObject.addProperty("saturn-updater", Saturn.getUpdater().name().toLowerCase());
 			jsonObject.addProperty("saturn-hard-reset", Saturn.hardReset);
 			jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
 			jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);

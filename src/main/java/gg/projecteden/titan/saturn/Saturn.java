@@ -1,7 +1,6 @@
 package gg.projecteden.titan.saturn;
 
 import gg.projecteden.titan.Titan;
-import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.network.ServerChannel;
 import lombok.Getter;
 import net.fabricmc.loader.api.FabricLoader;
@@ -14,9 +13,8 @@ import java.util.List;
 
 public class Saturn {
 
-	public static String version;
 	@Getter
-	private static SaturnUpdater updater;
+	private static final SaturnUpdater updater = SaturnUpdater.GIT;
 	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
 	public static SaturnUpdater.Env env = SaturnUpdater.Env.PROD;
 	public static boolean hardReset = true;
@@ -28,12 +26,6 @@ public class Saturn {
 	public static List<Runnable> queuedProcesses = new ArrayList<>();
 
 	public static boolean update() {
-		if (updater == null)
-			if (DOT_GIT_PATH.toFile().exists() && Config.isGitInstalled())
-				setUpdater(SaturnUpdater.GIT);
-			else
-				setUpdater(SaturnUpdater.ZIP_DOWNLOAD);
-
 		try {
 			if (!isInstalled()) {
 				Titan.log("Installing Saturn");
@@ -53,7 +45,7 @@ public class Saturn {
 	}
 
 	public static boolean isInstalled() {
-		return PATH.toFile().exists();
+		return PATH.toFile().exists() && DOT_GIT_PATH.toFile().exists();
 	}
 
 	public static String version() {
@@ -73,14 +65,6 @@ public class Saturn {
 
 	public static boolean checkForUpdates() {
 		return updater.checkForUpdates();
-	}
-
-	public static void setUpdater(SaturnUpdater updater) {
-		Saturn.updater = updater;
-		if (updater == SaturnUpdater.GIT && !DOT_GIT_PATH.toFile().exists()) {
-			queueProcess(() -> Titan.log(updater.install()));
-			MinecraftClient.getInstance().reloadResources();
-		}
 	}
 
 	public static void queueProcess(Runnable runnable) {

@@ -16,7 +16,8 @@ repositories {
 
 	maven { url "https://maven.terraformersmc.com/releases/" }
 	maven { url "https://maven.shedaniel.me/" }
-	maven { url 'https://maven.projecteden.gg/repo' }
+	maven { url "https://maven.projecteden.gg/repo" }
+	maven { url "https://repo.eclipse.org/content/groups/releases/" }
 }
 
 dependencies {
@@ -29,6 +30,10 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	implementation include("net.lingala.zip4j:zip4j:2.11.1") {
+		transitive(true)
+	}
+
+	implementation include("org.eclipse.jgit:org.eclipse.jgit:6.2.0.202206071550-r") {
 		transitive(true)
 	}
 

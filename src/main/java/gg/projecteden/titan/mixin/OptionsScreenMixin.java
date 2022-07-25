@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Language;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,13 +29,15 @@ public class OptionsScreenMixin extends Screen {
 	ButtonWidget.TooltipSupplier supplier = (button, matrices, mouseX, mouseY) -> {
 		this.renderOrderedTooltip(
 				matrices,
-				updateAvailable ?
-						MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain("There is an update available for Saturn. Click to download."), 200) :
-						Language.getInstance().reorder(new ArrayList<>() {{
-							add(Text.literal("Saturn installed with Titan"));
-							add(Text.literal("Version: " + saturnVersion));
-						}})
-				,
+				Language.getInstance().reorder(new ArrayList<>() {{
+					add(Text.literal("Saturn installed with Titan"));
+					add(Text.literal("Version: " + saturnVersion));
+					if (updateAvailable) {
+						add(Text.empty());
+						add(Text.literal("There is an update available"));
+						add(Text.literal("Click to download"));
+					}
+				}}),
 				mouseX,
 				mouseY);
 	};

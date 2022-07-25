@@ -1,128 +1,83 @@
 package gg.projecteden.titan.saturn;
 
 import gg.projecteden.titan.Titan;
-import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.update.GitResponse;
 import joptsimple.internal.Strings;
+import lombok.SneakyThrows;
 import net.fabricmc.loader.api.FabricLoader;
-import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
-import static gg.projecteden.titan.Utils.bash;
 import static gg.projecteden.titan.Utils.getGitResponse;
 import static gg.projecteden.titan.saturn.Saturn.PATH;
 
 public enum SaturnUpdater {
-	ZIP_DOWNLOAD {
-		boolean updateAvailable = false;
-
-		@Override
-		public String version() {
-			return Saturn.version;
-		}
-
-		@Override
-		public String install() {
-			return update();
-		}
-
-		@Override
-		public String update() {
-			try {
-				Titan.log("Updating Saturn via Zip Download");
-				FileUtils.copyURLToFile(new URL(String.format("https://cdn.projecteden.gg/ResourcePack%S.zip", Saturn.env.getSuffix())), Paths.get(PATH + ".zip").toFile());
-				Titan.log("Unpacking...");
-
-				try (ZipFile zipFile = new ZipFile(PATH + ".zip")) {
-					FileUtils.deleteDirectory(PATH.toFile());
-					zipFile.extractAll(PATH.toString());
-					zipFile.getFile().delete();
-				}
-
-				String newVersion = getServerVersion();
-				Titan.log("New version: " + newVersion);
-				Saturn.version = newVersion;
-				Config.save();
-				updateAvailable = false;
-				return "Successfully updated Saturn";
-			} catch (Exception ex) {
-				Titan.log("An error occurred while updating Saturn:");
-				ex.printStackTrace();
-				return null;
-			}
-		}
-
-		@Override
-		public boolean checkForUpdates() {
-			if (updateAvailable)
-				return true;
-			try {
-				if (Strings.isNullOrEmpty(version())) {
-					updateAvailable = true;
-					return true;
-				}
-				String serverVersion = getServerVersion();
-				if (!serverVersion.equals(version())) {
-					updateAvailable = true;
-					return true;
-				}
-
-			} catch (Exception ex) {
-				Titan.log("An error occurred while checking for Saturn updates");
-				ex.printStackTrace();
-			}
-			return false;
-		}
-
-		private String getServerVersion() {
-			try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
-				HttpGet request = new HttpGet(String.format("https://cdn.projecteden.gg/SaturnVersion%s", Saturn.env.getSuffix()));
-				CloseableHttpResponse response = client.execute(request);
-				return EntityUtils.toString(response.getEntity());
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			return null;
-		}
-
-	},
 	GIT {
 		boolean updateAvailable;
 
 		@Override
+		@SneakyThrows
 		public String version() {
-			return git("rev-parse HEAD");
+			try (Git git = git()) {
+				return git.getRepository().findRef("HEAD").getObjectId().getName().substring(0, 7);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				return "Unknown";
+			}
 		}
 
 		@Override
 		public String install() {
-			if (PATH.toFile().exists()) {
-				try {
+			try {
+				if (PATH.toFile().exists())
 					FileUtils.deleteDirectory(PATH.toFile());
-				} catch (Exception ex) {
-					Titan.log("An error occurred while updating Saturn:");
-					ex.printStackTrace();
+				try (Git git = cloneCommand().call()) {
+					return git.toString();
 				}
+			} catch (Exception ex) {
+				Titan.log("An error occurred while installing Saturn:");
+				ex.printStackTrace();
+				return ex.getMessage();
 			}
-			return bash("git clone https://github.com/ProjectEdenGG/Saturn.git", FabricLoader.getInstance().getGameDir().resolve("resourcepacks").toFile());
+		}
+
+		@SneakyThrows
+		protected CloneCommand cloneCommand() {
+			return Git.cloneRepository()
+					.setURI("https://github.com/ProjectEdenGG/Saturn.git")
+					.setDirectory(getResourcePackFolder().resolve("Saturn").toFile());
+		}
+
+		@NotNull
+		private Path getResourcePackFolder() {
+			return FabricLoader.getInstance().getGameDir().resolve("resourcepacks");
 		}
 
 		@Override
+		@SneakyThrows
 		public String update() {
-			Titan.log("Updating Saturn via git");
-			if (Saturn.hardReset)
-				Titan.log(git("reset --hard HEAD"));
-			updateAvailable = false;
-			return git("pull");
+			Titan.log("Updating Saturn via jgit");
+			try (Git git = git()) {
+				if (Saturn.hardReset)
+					git.reset().setMode(ResetType.HARD).call();
+				updateAvailable = false;
+				return git.pull().call().toString();
+			}
+		}
+
+		@NotNull
+		@SneakyThrows
+		private Git git() {
+			return new Git(new FileRepositoryBuilder().setGitDir(getResourcePackFolder().resolve("Saturn").resolve(".git").toFile())
+					.readEnvironment()
+					.findGitDir()
+					.build());
 		}
 
 		@Override
@@ -130,20 +85,13 @@ public enum SaturnUpdater {
 			if (updateAvailable)
 				return true;
 			else {
-				try {
-					if (!git("rev-parse --abbrev-ref HEAD").equals("main")) // Check local branch is main, or infinite loops
-						return false;
-					String commitVersion = getGitResponse("Saturn/commits/main", GitResponse.Saturn.class).getSha();
+				try (Git git  = git()) {
+					String commitVersion = getGitResponse("Saturn/commits/" + git.getRepository().getBranch(), GitResponse.Saturn.class).getSha();
 					String saturnVersion = Saturn.version();
 					updateAvailable = (commitVersion != null && saturnVersion != null && !commitVersion.startsWith(saturnVersion)) || Strings.isNullOrEmpty(saturnVersion);
 				} catch (Exception ignore) { } // Rate limit on unauthenticated git api requests
 			}
 			return updateAvailable;
-		}
-
-		@NotNull
-		private static String git(String command) {
-			return bash("git " + command, PATH.toFile());
 		}
 	};
 
@@ -162,16 +110,17 @@ public enum SaturnUpdater {
 	}
 
 	public enum Env {
-		PROD,
-		TEST {
+		PROD {
 			@Override
 			public String getSuffix() {
-				return "-TEST";
+				return "";
 			}
-		};
+		},
+		TEST,
+		;
 
 		public String getSuffix() {
-			return "";
+			return "-" + name();
 		}
 	}
 

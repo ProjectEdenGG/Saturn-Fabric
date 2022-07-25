@@ -17,8 +17,6 @@ import java.io.Reader;
 import java.nio.file.Path;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
-import static gg.projecteden.titan.Utils.bash;
-import static gg.projecteden.titan.saturn.Saturn.PATH;
 
 public class Config {
 
@@ -27,23 +25,6 @@ public class Config {
 	private final static Path TITAN_CONFIG_DIR = GAME_CONFIG_DIR.resolve(MOD_ID);
 
 	private final static File CONFIG_FILE = new File(configDir(), MOD_ID + ".json");
-
-	private static boolean gitInstalled = false;
-
-	public static boolean isGitInstalled() {
-		return gitInstalled;
-	}
-
-	static {
-		checkGitInstalled();
-	}
-
-	static void checkGitInstalled() {
-		try {
-			bash("git", PATH.toFile());
-			gitInstalled = true;
-		} catch (Exception ignore) {}
-	}
 
 	public static File configDir() {
 		File mapConfigDir = TITAN_CONFIG_DIR.toFile();
@@ -93,10 +74,8 @@ public class Config {
 	public static void save() {
 		JsonObject jsonObject = new JsonObject();
 
-		jsonObject.addProperty("saturn-updater", Saturn.getUpdater().name().toLowerCase());
 		jsonObject.addProperty("saturn-hard-reset", Saturn.hardReset);
 		jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
-		jsonObject.addProperty("saturn-version", Saturn.getUpdater().version());
 		jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);
 		jsonObject.addProperty("saturn-enabled-default", Saturn.enabledByDefault);
 		storeJson(CONFIG_FILE, jsonObject);
@@ -104,19 +83,14 @@ public class Config {
 
 	public static void load() {
 		JsonObject json = getJsonObject(CONFIG_FILE);
-		if (json.has("saturn-updater"))
-			Saturn.setUpdater(SaturnUpdater.valueOf(JsonHelper.getString(json, "saturn-updater").toUpperCase()));
 		if (json.has("saturn-hard-reset"))
 			Saturn.hardReset = JsonHelper.getBoolean(json, "saturn-hard-reset");
 		if (json.has("saturn-update-mode"))
 			Saturn.mode = SaturnUpdater.Mode.valueOf(JsonHelper.getString(json, "saturn-update-mode").toUpperCase());
-		if (json.has("saturn-version"))
-			Saturn.version = JsonHelper.getString(json, "saturn-version");
 		if (json.has("saturn-manage-status"))
 			Saturn.manageStatus = JsonHelper.getBoolean(json, "saturn-manage-status");
 		if (json.has("saturn-enabled-default"))
 			Saturn.enabledByDefault = JsonHelper.getBoolean(json, "saturn-enabled-default");
 	}
-
 
 }
