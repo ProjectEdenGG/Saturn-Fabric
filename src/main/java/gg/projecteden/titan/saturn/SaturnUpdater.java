@@ -65,7 +65,7 @@ public enum SaturnUpdater {
 			Titan.log("Updating Saturn via jgit");
 			try (Git git = git()) {
 				if (Saturn.hardReset)
-					git.reset().setMode(ResetType.HARD).call();
+					git.reset().setMode(ResetType.HARD).setRef("origin/" + git.getRepository().getBranch()).call();
 				updateAvailable = false;
 				return git.pull().call().toString();
 			}
