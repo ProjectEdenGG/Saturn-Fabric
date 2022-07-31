@@ -72,8 +72,9 @@ public class ResourcePackEvents {
 							lastForcedReload = thisReload;
 							MinecraftClient.getInstance().reloadResources();
 							MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
-							ServerChannel.reportToEden();
 						}
+
+						ServerChannel.reportToEden();
 					});
 				}
 				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
