@@ -1,6 +1,6 @@
 # Titan
 
-### [Download here](https://projecteden.gg/titan)
+### [Download](https://projecteden.gg/titan)
 
 Titan is a fabric mod created to supplement [Saturn](https://github.com/ProjectEdenGG/Saturn) (the resource pack) on Project Eden.
 
