@@ -69,8 +69,14 @@ public class TitleScreenMixin extends Screen {
 		ButtonWidget.PressAction action = button -> {
 			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE) {
 				TitanUpdater.downloadUpdate().thenAccept(bool -> {
-					if (bool)
+					if (bool) {
 						TitanUpdater.updateStatus = UpdateStatus.DONE;
+						new Thread(() -> {
+							try { Thread.sleep(2000);
+							} catch (InterruptedException ignore) { }
+							MinecraftClient.getInstance().stop();
+						}).start();
+					}
 					else
 						TitanUpdater.updateStatus = UpdateStatus.ERROR;
 				});

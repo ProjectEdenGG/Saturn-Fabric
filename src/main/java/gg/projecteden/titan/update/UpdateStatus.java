@@ -2,10 +2,10 @@ package gg.projecteden.titan.update;
 
 public enum UpdateStatus {
 	NONE("Connect directly to projecteden.gg"),
-	AVAILABLE("An update for Titan is available. Click to download."),
+	AVAILABLE("An update for Titan is available. Click to upload automatically. This will close your game."),
 	DOWNLOADING("Downloading..."),
 	ERROR("An error occurred while updating Titan. Please report this to the Project Eden Staff."),
-	DONE("Download complete. Please restart your game for the newest version.");
+	DONE("Download complete. Stopping game...");
 
 	final String titleScreenTooltip;
 
