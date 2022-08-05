@@ -12,6 +12,8 @@ Titan's features include:
 
 Optionally, you can install [ModMenu](https://modrinth.com/mod/modmenu) to configure how Titan works. 
 
+Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+
 ## Incompatibilties
 Titan is incompatible with OptiFine (via OptiFabric). 
 
