@@ -38,6 +38,7 @@ The staff team also often use the following mods to implement some of OptiFine's
 - [Iris](https://modrinth.com/mod/iris) - Shaders
 - [LambDynamicLights](https://modrinth.com/mod/lambdynamiclights) - Dynamic lighting
 
+## Recommended Mods
 And lastly, some other mods we recommend:
 - [InGameAccountSwitcher](https://modrinth.com/mod/in-game-account-switcher) - Switch between and log back into accounts without quitting the game (fixes "invalid session")
     - Remember that alt accounts are not allowed on Project Eden
