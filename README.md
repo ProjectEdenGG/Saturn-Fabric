@@ -7,6 +7,7 @@ Titan is a fabric mod created to supplement [Saturn](https://github.com/ProjectE
 Titan's features include:
 - Auto-updating Saturn on game startup/texture reload
 - Fixing unwanted culling of large custom models
+- Telling the server what version of Saturn you have installed
 - Bundles [CITResewn](https://modrinth.com/mod/cit-resewn), which allows for rendering different armor textures
 
 Optionally, you can install [ModMenu](https://modrinth.com/mod/modmenu) to configure how Titan works. 
