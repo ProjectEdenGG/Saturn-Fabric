@@ -2,6 +2,8 @@
 
 ### [Download](https://projecteden.gg/titan)
 
+**Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)**
+
 Titan is a fabric mod created to supplement [Saturn](https://github.com/ProjectEdenGG/Saturn) (the resource pack) on Project Eden.
 
 Titan's features include:
@@ -11,8 +13,6 @@ Titan's features include:
 - Bundles [CITResewn](https://modrinth.com/mod/cit-resewn), which allows for rendering different armor textures
 
 Optionally, you can install [ModMenu](https://modrinth.com/mod/modmenu) to configure how Titan works. 
-
-Requires [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
 
 ## Incompatibilties
 Titan is incompatible with OptiFine (via OptiFabric). 
