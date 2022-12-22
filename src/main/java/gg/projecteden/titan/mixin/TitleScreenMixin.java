@@ -62,11 +62,11 @@ public class TitleScreenMixin extends Screen {
 			y -= spacingY;
 		ButtonWidget.PressAction action = button -> {
 			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE) {
-                button.setTooltip(Tooltip.of(Text.of(UpdateStatus.DOWNLOADING.getTitleScreenTooltip())));
+                button.setTooltip(UpdateStatus.DOWNLOADING.getTitleScreenTooltip());
 				TitanUpdater.downloadUpdate().thenAccept(bool -> {
 					if (bool) {
 						TitanUpdater.updateStatus = UpdateStatus.DONE;
-                        button.setTooltip(Tooltip.of(Text.of(UpdateStatus.DONE.getTitleScreenTooltip())));
+                        button.setTooltip(UpdateStatus.DONE.getTitleScreenTooltip());
 						new Thread(() -> {
 							try { Thread.sleep(2000);
 							} catch (InterruptedException ignore) { }
@@ -75,7 +75,7 @@ public class TitleScreenMixin extends Screen {
 					}
 					else {
                         TitanUpdater.updateStatus = UpdateStatus.ERROR;
-                        button.setTooltip(Tooltip.of(Text.of(UpdateStatus.ERROR.getTitleScreenTooltip())));
+                        button.setTooltip(UpdateStatus.ERROR.getTitleScreenTooltip());
                     }
 				});
 			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
@@ -83,7 +83,7 @@ public class TitleScreenMixin extends Screen {
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action).dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20).build());
 		TexturedButtonWidget joinProjectEdenButton = new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Project Eden"));
-		joinProjectEdenButton.setTooltip(Tooltip.of(Text.of(TitanUpdater.updateStatus.getTitleScreenTooltip())));
+		joinProjectEdenButton.setTooltip(TitanUpdater.updateStatus.getTitleScreenTooltip());
         this.addDrawableChild(joinProjectEdenButton);
 
 		if (!modMenu)
