@@ -62,17 +62,21 @@ public class TitleScreenMixin extends Screen {
 			y -= spacingY;
 		ButtonWidget.PressAction action = button -> {
 			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE) {
+                button.setTooltip(Tooltip.of(Text.of(UpdateStatus.DOWNLOADING.getTitleScreenTooltip())));
 				TitanUpdater.downloadUpdate().thenAccept(bool -> {
 					if (bool) {
 						TitanUpdater.updateStatus = UpdateStatus.DONE;
+                        button.setTooltip(Tooltip.of(Text.of(UpdateStatus.DONE.getTitleScreenTooltip())));
 						new Thread(() -> {
 							try { Thread.sleep(2000);
 							} catch (InterruptedException ignore) { }
 							MinecraftClient.getInstance().stop();
 						}).start();
 					}
-					else
-						TitanUpdater.updateStatus = UpdateStatus.ERROR;
+					else {
+                        TitanUpdater.updateStatus = UpdateStatus.ERROR;
+                        button.setTooltip(Tooltip.of(Text.of(UpdateStatus.ERROR.getTitleScreenTooltip())));
+                    }
 				});
 			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo);
