@@ -10,6 +10,7 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.network.ServerAddress;
@@ -78,10 +79,8 @@ public class TitleScreenMixin extends Screen {
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action).dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20).build());
 		TexturedButtonWidget joinProjectEdenButton = new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Project Eden"));
-		this.addDrawableChild(joinProjectEdenButton);
-
-		// TODO Set this as joinProjectEdenButton tooltip
-		MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain(TitanUpdater.updateStatus.getTitleScreenTooltip()), 125);
+		joinProjectEdenButton.setTooltip(Tooltip.of(Text.of(TitanUpdater.updateStatus.getTitleScreenTooltip())));
+        this.addDrawableChild(joinProjectEdenButton);
 
 		if (!modMenu)
 			y -= (spacingY / 2);

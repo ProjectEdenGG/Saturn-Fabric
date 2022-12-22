@@ -14,6 +14,7 @@ import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
+import net.minecraft.client.option.SimpleOption;
 import net.minecraft.text.Text;
 import net.minecraft.util.Language;
 import org.spongepowered.asm.mixin.Mixin;
@@ -53,15 +54,16 @@ public class OptionsScreenMixin extends Screen {
 		this.addDrawableChild(new ButtonWidget.Builder(Text.of(""), button -> action.onPress(button)).dimensions(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20).build());
 		TexturedButtonWidget updateSaturnButton = new TexturedButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Update Saturn"));
 		// TODO Set this as tooltip of updateSaturnButton
-		Language.getInstance().reorder(new ArrayList<>() {{
-			add(Text.literal("Saturn installed with Titan"));
-			add(Text.literal("Version: " + saturnVersion));
-			if (updateAvailable) {
-				add(Text.empty());
-				add(Text.literal("There is an update available"));
-				add(Text.literal("Click to download"));
-			}
-		}});
+        String tooltipText = "Saturn installed with Titan\n" +
+            "Version: " + saturnVersion;
+        if (updateAvailable) {
+            tooltipText +=
+                """
+                    There is an update available
+                    Click to download
+                    """;
+        }
+        updateSaturnButton.setTooltip(Tooltip.of(Text.literal(tooltipText)));
 
 		this.addDrawableChild(updateSaturnButton);
 		if (updateAvailable) {
