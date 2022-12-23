@@ -36,13 +36,6 @@ public class TitleScreenMixin extends Screen {
 
 	@Inject(at = @At("RETURN"), method = "initWidgetsNormal")
 	private void addDirectServerButton(int y, int spacingY, CallbackInfo ci) {
-		ButtonWidget.TooltipSupplier tooltipSupplier = (button, matrices, mouseX, mouseY) -> {
-			this.renderOrderedTooltip(
-					matrices,
-					MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain(TitanUpdater.updateStatus.getTitleScreenTooltip()), 125),
-					mouseX,
-					mouseY);
-		};
 		if (TitleScreenMixin.serverInfo == null) {
 			ServerInfo serverInfo = null;
 			ServerList serverList = new ServerList(MinecraftClient.getInstance());
@@ -83,8 +76,13 @@ public class TitleScreenMixin extends Screen {
 			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo);
 		};
-		this.addDrawableChild(new ButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, Text.of(""), action));
-		this.addDrawableChild(new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, tooltipSupplier, Text.of("Project Eden")));
+		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action).dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20).build());
+		TexturedButtonWidget joinProjectEdenButton = new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Project Eden"));
+		this.addDrawableChild(joinProjectEdenButton);
+
+		// TODO Set this as joinProjectEdenButton tooltip
+		MinecraftClient.getInstance().textRenderer.wrapLines(StringVisitable.plain(TitanUpdater.updateStatus.getTitleScreenTooltip()), 125);
+
 		if (!modMenu)
 			y -= (spacingY / 2);
 		int finalY = y;

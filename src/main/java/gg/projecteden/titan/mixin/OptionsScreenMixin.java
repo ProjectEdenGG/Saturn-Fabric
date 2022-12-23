@@ -7,7 +7,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
+import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.tooltip.TooltipBackgroundRenderer;
+import net.minecraft.client.gui.tooltip.TooltipComponent;
+import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Language;
@@ -16,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import static gg.projecteden.titan.Titan.UPDATE_AVAILABLE;
@@ -26,21 +32,6 @@ public class OptionsScreenMixin extends Screen {
 	private boolean updateAvailable;
 	private String saturnVersion;
 
-	ButtonWidget.TooltipSupplier supplier = (button, matrices, mouseX, mouseY) -> {
-		this.renderOrderedTooltip(
-				matrices,
-				Language.getInstance().reorder(new ArrayList<>() {{
-					add(Text.literal("Saturn installed with Titan"));
-					add(Text.literal("Version: " + saturnVersion));
-					if (updateAvailable) {
-						add(Text.empty());
-						add(Text.literal("There is an update available"));
-						add(Text.literal("Click to download"));
-					}
-				}}),
-				mouseX,
-				mouseY);
-	};
 	ButtonWidget.PressAction action = button -> {
 		if (updateAvailable) {
 			Saturn.queueProcess(() -> {
@@ -59,8 +50,20 @@ public class OptionsScreenMixin extends Screen {
 	public void drawSaturnUpdateChecker(CallbackInfo ci) {
 		updateAvailable = Saturn.checkForUpdates();
 		saturnVersion = Saturn.shortVersion();
-		this.addDrawableChild(new ButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, Text.of(""), action));
-		this.addDrawableChild(new TexturedButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, supplier, Text.of("Update Saturn")));
+		this.addDrawableChild(new ButtonWidget.Builder(Text.of(""), button -> action.onPress(button)).dimensions(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20).build());
+		TexturedButtonWidget updateSaturnButton = new TexturedButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Update Saturn"));
+		// TODO Set this as tooltip of updateSaturnButton
+		Language.getInstance().reorder(new ArrayList<>() {{
+			add(Text.literal("Saturn installed with Titan"));
+			add(Text.literal("Version: " + saturnVersion));
+			if (updateAvailable) {
+				add(Text.empty());
+				add(Text.literal("There is an update available"));
+				add(Text.literal("Click to download"));
+			}
+		}});
+
+		this.addDrawableChild(updateSaturnButton);
 		if (updateAvailable) {
 			this.addDrawable((matrices, mouseX, mouseY, delta) -> {
 				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);
