@@ -1,11 +1,13 @@
 package gg.projecteden.titan;
 
+import gg.projecteden.titan.command.TitanCommand;
 import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.events.Events;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import gg.projecteden.titan.update.TitanUpdater;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.util.Identifier;
@@ -44,6 +46,8 @@ public class Titan implements ModInitializer {
 		Events.register();
 		if (Saturn.manageStatus && !Saturn.enabledByDefault)
 			Saturn.disable();
+		ClientCommandRegistrationCallback.EVENT.register(TitanCommand::init);
 	}
+
 
 }

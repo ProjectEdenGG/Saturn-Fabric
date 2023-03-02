@@ -59,7 +59,7 @@ public class OptionsScreenMixin extends Screen {
         if (updateAvailable) {
             tooltipText +=
                 """
-                    There is an update available
+                    \nThere is an update available
                     Click to download
                     """;
         }

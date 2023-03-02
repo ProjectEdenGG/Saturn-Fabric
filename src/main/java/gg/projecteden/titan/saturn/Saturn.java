@@ -34,6 +34,7 @@ public class Saturn {
 				Titan.log("Updating Saturn");
 				Titan.log(updater.update());
 			} else {
+				Titan.log("Not updating as Saturn is already up-to-date");
 				return false;
 			}
 			ServerChannel.reportToEden();
