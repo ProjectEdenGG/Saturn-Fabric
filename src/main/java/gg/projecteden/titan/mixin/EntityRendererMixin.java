@@ -20,7 +20,7 @@ public class EntityRendererMixin {
 		if (!(entity instanceof ArmorStandEntity || entity instanceof ItemFrameEntity))
 			return;
 
-		final Vec3i location = new Vec3i(x, y, z);
+		final Vec3i location = new Vec3i((int) x, (int) y, (int) z);
 		if (entity.getBlockPos().isWithinDistance(location, ALWAYS_RENDER_WITHIN))
 			info.setReturnValue(true);
 	}
