@@ -41,7 +41,7 @@ jobs:
           releases-only: true
       - name: Delete previous tag/release
         id: delete-release
-        uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
         with:
           delete_release: true
           tag_name: ${{ steps.vars2.outputs.tag }}
