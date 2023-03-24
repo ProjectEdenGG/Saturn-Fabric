@@ -10,15 +10,20 @@ import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import static gg.projecteden.titan.Utils.getGitResponse;
 import static gg.projecteden.titan.saturn.Saturn.PATH;
 
 public enum SaturnUpdater {
 	GIT {
+		final String REMOTE_NAME = "https";
+		final String REMOTE_URI = "https://github.com/ProjectEdenGG/Saturn.git";
 		boolean updateAvailable;
 
 		@Override
@@ -50,7 +55,7 @@ public enum SaturnUpdater {
 		@SneakyThrows
 		protected CloneCommand cloneCommand() {
 			return Git.cloneRepository()
-					.setURI("https://github.com/ProjectEdenGG/Saturn.git")
+					.setURI(REMOTE_URI)
 					.setDirectory(getResourcePackFolder().resolve("Saturn").toFile());
 		}
 
@@ -66,8 +71,17 @@ public enum SaturnUpdater {
 			try (Git git = git()) {
 				if (Saturn.hardReset)
 					git.reset().setMode(ResetType.HARD).setRef("origin/" + git.getRepository().getBranch()).call();
+
 				updateAvailable = false;
-				return git.pull().call().toString();
+
+				final List<RemoteConfig> remotes = git.remoteList().call();
+
+				if (remotes.stream().noneMatch(config -> config.getName().equals(REMOTE_NAME)))
+					git.remoteAdd().setName(REMOTE_NAME).setUri(new URIish(REMOTE_URI)).call();
+				else
+					git.remoteSetUrl().setRemoteName(REMOTE_NAME).setRemoteUri(new URIish(REMOTE_URI)).call();
+
+				return git.pull().setRemote(REMOTE_NAME).setRebase(true).call().toString();
 			}
 		}
 
