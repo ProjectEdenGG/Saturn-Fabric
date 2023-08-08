@@ -22,7 +22,7 @@ public class ServerChannel {
 	private static final Identifier CHANNEL_CLIENTBOUND = new Identifier(MOD_ID, "clientbound");
 
 	static {
-		ClientPlayNetworking.registerGlobalReceiver(ServerChannel.CHANNEL_CLIENTBOUND, new ServerChannel.ServerChannelReceiver());
+		ClientPlayNetworking.registerGlobalReceiver(ServerChannel.CHANNEL_CLIENTBOUND, new ServerChannelReceiver());
 	}
 
 	public static void send(String string) {

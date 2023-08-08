@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'fabric-loom' version '1.2-SNAPSHOT'
 	id 'maven-publish'
 	id "io.freefair.lombok" version "6.5.0-rc1"
 }
@@ -10,6 +10,10 @@ targetCompatibility = JavaVersion.VERSION_17
 archivesBaseName = project.archives_base_name
 version = 'git rev-parse --short HEAD'.execute().text.trim()
 group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
 
 repositories {
 	mavenCentral()
@@ -45,9 +49,9 @@ dependencies {
 		exclude (group: "net.fabricmc.fabric-api")
 	}
 
-//	modImplementation include ("shcm.shsupercm.fabric:CITResewn:${project.cit_version}") {
-//		exclude (group: "net.fabricmc.fabric-api")
-//	}
+	modImplementation include ("shcm.shsupercm.fabric:CITResewn:${project.cit_version}") {
+		exclude (group: "net.fabricmc.fabric-api")
+	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
@@ -76,11 +80,14 @@ java {
 	// if it is present.
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.base.archivesName.get()}"}
 	}
 }
 

@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.saturn.Saturn;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -72,7 +72,7 @@ public class OptionsScreenMixin extends Screen {
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 				matrices.push();
 				matrices.scale(0.4F, 0.4F, 0.4F);
-				DrawableHelper.drawTexture(matrices, (int) ((this.width / 2 - 165) * 2.5), (int) ((this.height / 6 + 120 - 15) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
+				DrawContext.drawTexture(matrices, (int) ((this.width / 2 - 165) * 2.5), (int) ((this.height / 6 + 120 - 15) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
 				matrices.pop();
 			});
 		}
