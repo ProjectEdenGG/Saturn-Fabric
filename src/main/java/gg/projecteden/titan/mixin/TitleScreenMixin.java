@@ -79,7 +79,7 @@ public class TitleScreenMixin extends Screen {
                     }
 				});
 			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
-				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo);
+				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false);
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action).dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20).build());
 		TexturedButtonWidget joinProjectEdenButton = new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Project Eden"));
@@ -90,13 +90,13 @@ public class TitleScreenMixin extends Screen {
 			y -= (spacingY / 2);
 		int finalY = y;
 		if (TitanUpdater.updateStatus != UpdateStatus.NONE) {
-			this.addDrawable((matrices, mouseX, mouseY, delta) -> {
+			this.addDrawable((context, mouseX, mouseY, delta) -> {
 				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-				matrices.push();
-				matrices.scale(0.4F, 0.4F, 0.4F);
-				DrawContext.drawTexture(matrices, (int) ((TitleScreenMixin.this.width / 2 - 100 + 220) * 2.5), (int) ((finalY + spacingY + 5) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
-				matrices.pop();
+				context.getMatrices().push();
+				context.getMatrices().scale(0.4F, 0.4F, 0.4F);
+				context.drawTexture(UPDATE_AVAILABLE, (int) ((TitleScreenMixin.this.width / 2 - 100 + 220) * 2.5), (int) ((finalY + spacingY + 5) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
+				context.getMatrices().pop();
 			});
 		}
 	}

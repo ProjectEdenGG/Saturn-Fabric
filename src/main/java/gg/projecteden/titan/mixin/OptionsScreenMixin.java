@@ -67,13 +67,13 @@ public class OptionsScreenMixin extends Screen {
 
 		this.addDrawableChild(updateSaturnButton);
 		if (updateAvailable) {
-			this.addDrawable((matrices, mouseX, mouseY, delta) -> {
+			this.addDrawable((context, mouseX, mouseY, delta) -> {
 				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-				matrices.push();
-				matrices.scale(0.4F, 0.4F, 0.4F);
-				DrawContext.drawTexture(matrices, (int) ((this.width / 2 - 165) * 2.5), (int) ((this.height / 6 + 120 - 15) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
-				matrices.pop();
+				context.getMatrices().push();
+				context.getMatrices().scale(0.4F, 0.4F, 0.4F);
+				context.drawTexture(UPDATE_AVAILABLE, (int) ((this.width / 2 - 165) * 2.5), (int) ((this.height / 6 + 120 - 15) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
+				context.getMatrices().pop();
 			});
 		}
 	}
