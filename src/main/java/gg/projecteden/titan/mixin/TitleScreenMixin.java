@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextIconButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
@@ -23,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static gg.projecteden.titan.Titan.PE_LOGO_IDEN;
 import static gg.projecteden.titan.Titan.UPDATE_AVAILABLE;
 
 @Mixin(TitleScreen.class)
@@ -53,7 +55,7 @@ public class TitleScreenMixin extends Screen {
 				}
 			}
 			if (serverInfo == null)
-				serverInfo = new ServerInfo("project-eden", "projecteden.gg", false);
+				serverInfo = new ServerInfo("project-eden", "projecteden.gg", ServerInfo.ServerType.OTHER);
 
 			TitleScreenMixin.serverInfo = serverInfo;
 		}
@@ -81,21 +83,32 @@ public class TitleScreenMixin extends Screen {
 			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false);
 		};
-		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action).dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20).build());
-		TexturedButtonWidget joinProjectEdenButton = new TexturedButtonWidget(this.width / 2 - 100 + 205, y + spacingY, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Project Eden"));
-		joinProjectEdenButton.setTooltip(TitanUpdater.updateStatus.getTitleScreenTooltip());
-        this.addDrawableChild(joinProjectEdenButton);
+		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action)
+				.dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20)
+				.tooltip(TitanUpdater.updateStatus.getTitleScreenTooltip())
+				.build());
 
+		int finalY = y;
 		if (!modMenu)
 			y -= (spacingY / 2);
-		int finalY = y;
+		int finalY2 = y;
+
+		this.addDrawable((context, mouseX, mouseY, delta) -> {
+			RenderSystem.setShaderTexture(0, PE_LOGO_IDEN);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			context.getMatrices().push();
+			context.getMatrices().scale(1f, 1F, 1F);
+			context.drawTexture(PE_LOGO_IDEN, this.width / 2 - 100 + 205, finalY + spacingY + (spacingY / 2), 0.0F, 0.0F, 20, 20, 20, 20);
+			context.getMatrices().pop();
+		});
+
 		if (TitanUpdater.updateStatus != UpdateStatus.NONE) {
 			this.addDrawable((context, mouseX, mouseY, delta) -> {
 				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);
 				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 				context.getMatrices().push();
 				context.getMatrices().scale(0.4F, 0.4F, 0.4F);
-				context.drawTexture(UPDATE_AVAILABLE, (int) ((TitleScreenMixin.this.width / 2 - 100 + 220) * 2.5), (int) ((finalY + spacingY + 5) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
+				context.drawTexture(UPDATE_AVAILABLE, (int) ((TitleScreenMixin.this.width / 2 - 100 + 220) * 2.5), (int) ((finalY2 + spacingY + 5) * 2.5), 0.0F, 0.0F, 9, 40, 9, 40);
 				context.getMatrices().pop();
 			});
 		}

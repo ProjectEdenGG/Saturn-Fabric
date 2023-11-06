@@ -13,6 +13,7 @@ import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextIconButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.option.SimpleOption;
 import net.minecraft.text.Text;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import static gg.projecteden.titan.Titan.PE_LOGO_IDEN;
 import static gg.projecteden.titan.Titan.UPDATE_AVAILABLE;
 
 @Mixin(OptionsScreen.class)
@@ -51,21 +53,31 @@ public class OptionsScreenMixin extends Screen {
 	public void drawSaturnUpdateChecker(CallbackInfo ci) {
 		updateAvailable = Saturn.checkForUpdates();
 		saturnVersion = Saturn.shortVersion();
-		this.addDrawableChild(new ButtonWidget.Builder(Text.of(""), button -> action.onPress(button)).dimensions(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20).build());
-		TexturedButtonWidget updateSaturnButton = new TexturedButtonWidget(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20, 0, 0, 0, Titan.PE_LOGO, 20, 20, action, Text.of("Update Saturn"));
-		// TODO Set this as tooltip of updateSaturnButton
-        String tooltipText = "Saturn installed with Titan\n" +
-            "Version: " + saturnVersion;
-        if (updateAvailable) {
-            tooltipText +=
-                """
-                    \nThere is an update available
-                    Click to download
-                    """;
-        }
-        updateSaturnButton.setTooltip(Tooltip.of(Text.literal(tooltipText)));
 
-		this.addDrawableChild(updateSaturnButton);
+		String tooltipText = "Saturn installed with Titan\n" +
+				"Version: " + saturnVersion;
+		if (updateAvailable) {
+			tooltipText +=
+					"""
+                        \nThere is an update available
+                        Click to download
+                        """;
+		}
+
+		this.addDrawableChild(ButtonWidget.builder(Text.of(""), button -> action.onPress(button))
+				.dimensions(this.width / 2 - 180, this.height / 6 + 120 - 6, 20, 20)
+				.tooltip(Tooltip.of(Text.literal(tooltipText)))
+				.build());
+
+		this.addDrawable((context, mouseX, mouseY, delta) -> {
+			RenderSystem.setShaderTexture(0, PE_LOGO_IDEN);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			context.getMatrices().push();
+			context.getMatrices().scale(1f, 1F, 1F);
+			context.drawTexture(PE_LOGO_IDEN, this.width / 2 - 180, this.height / 6 + 120 - 6, 0.0F, 0.0F, 20, 20, 20, 20);
+			context.getMatrices().pop();
+		});
+
 		if (updateAvailable) {
 			this.addDrawable((context, mouseX, mouseY, delta) -> {
 				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);

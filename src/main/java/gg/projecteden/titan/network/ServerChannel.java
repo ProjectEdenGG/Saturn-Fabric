@@ -62,7 +62,7 @@ public class ServerChannel {
 
 		@Override
 		public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
-			Objects.requireNonNull(PluginMessageEvent.from(new String(buf.getWrittenBytes()))).onReceive();
+			Objects.requireNonNull(PluginMessageEvent.from(new String(buf.readByteArray()))).onReceive();
 		}
 	}
 
