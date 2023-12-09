@@ -12,7 +12,6 @@ Titan's features include:
 - Notifications in game when Saturn has an update
 - Fixing unwanted culling of large custom models
 - Telling the server what version of Saturn you have installed
-- Bundles CITResewn, which allows for rendering different armor textures (Wither Armor)
 
 Optionally, you can install [ModMenu](https://modrinth.com/mod/modmenu) to configure how Titan works. 
 
