@@ -112,7 +112,7 @@ modrinth {
 	projectId = "f44hEoWP"
 	versionNumber = project.version
 	uploadFile = jar
-	gameVersions = ["1.20.2"]
+	gameVersions = ["${minecraft_version}"]
 	loaders = ["fabric"]
 	uploadFile = "./build/devlibs/titan.jar"
 	dependencies {
