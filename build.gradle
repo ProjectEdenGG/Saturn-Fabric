@@ -116,6 +116,8 @@ modrinth {
 	loaders = ["fabric"]
 	uploadFile = "./build/devlibs/titan.jar"
 	dependencies {
-		required.project "fabric-api"
+		required.version "fabric-api", "${project.fabric_version}"
+		optional.version "cloth-config", "${project.cloth_version}"
+		optional.project "modmenu", "${project.modmenu_version}"
 	}
 }
