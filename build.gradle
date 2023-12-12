@@ -81,6 +81,10 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
+}
+
+remapJar {
+	// Set the final name of the jar! This needs to be exactly this for the auto-update function to work!
 	archiveFileName = "titan.jar"
 }
 
@@ -114,10 +118,10 @@ modrinth {
 	uploadFile = jar
 	gameVersions = ["${minecraft_version}"]
 	loaders = ["fabric"]
-	uploadFile = "./build/devlibs/titan.jar"
+	uploadFile = "./build/libs/titan.jar"
 	dependencies {
-		required.version "fabric-api", "${project.fabric_version}"
-		optional.version "cloth-config", "${project.cloth_version}"
-		optional.project "modmenu", "${project.modmenu_version}"
+		required.project "fabric-api"
+		optional.project "cloth-config"
+		optional.project "modmenu"
 	}
 }
