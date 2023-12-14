@@ -61,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-new-release.outputs.upload_url }}
-          asset_path: ./build/libs/titan-${{ steps.vars1.outputs.sha_short }}.jar
+          asset_path: ./build/libs/titan.jar
           asset_name: titan.jar
           asset_content_type: jar
