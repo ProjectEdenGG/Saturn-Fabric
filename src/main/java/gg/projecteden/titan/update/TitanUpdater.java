@@ -1,72 +1,78 @@
 package gg.projecteden.titan.update;
 
+import com.google.gson.Gson;
 import gg.projecteden.titan.Titan;
-import net.fabricmc.loader.api.FabricLoader;
-import org.apache.commons.io.FileUtils;
+import gg.projecteden.titan.Utils;
+import net.minecraft.client.MinecraftClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.concurrent.CompletableFuture;
-
-import static gg.projecteden.titan.Utils.getGitResponse;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class TitanUpdater {
 
 	public static UpdateStatus updateStatus = UpdateStatus.NONE;
-	private static GitResponse.TitanRelease latestRelease;
-
-	public static void getMostRecent(GitResponse.TitanRelease[] releases) {
-		if (releases.length == 0)
-			return;
-		Arrays.sort(releases, Comparator.comparing(GitResponse.TitanRelease::getCreatedAt).reversed());
-		latestRelease = releases[0];
-	}
-
-	public static CompletableFuture<Boolean> downloadUpdate() {
-		updateStatus = UpdateStatus.DOWNLOADING;
-		CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-		Thread thread = new Thread(() -> {
-			GitResponse.TitanRelease.Asset asset = null;
-			for (GitResponse.TitanRelease.Asset _asset : latestRelease.assets) {
-				if (_asset.content_type.equals("jar")) {
-					asset = _asset;
-					break;
-				}
-			}
-			if (asset == null) {
-				Titan.log("Asset is null");
-				completableFuture.complete(false);
-				return;
-			}
-			try {
-				FileUtils.copyURLToFile(
-						new URL(asset.browser_download_url),
-						FabricLoader.getInstance().getGameDir().resolve("mods/titan.jar").toFile());
-				completableFuture.complete(true);
-			} catch (Exception ex) {
-				Titan.log("An error occurred while downloading Titan:");
-				ex.printStackTrace();
-				completableFuture.complete(false);
-			}
-		});
-		try {
-			thread.start();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			completableFuture.complete(false);
-		}
-		return completableFuture;
-	}
+	public static Date buildDate;
+	public static final String mcVersion = MinecraftClient.getInstance().getGameVersion();
 
 	public static void checkForUpdates() {
-		try {
-			TitanUpdater.getMostRecent(getGitResponse("Titan/releases", GitResponse.TitanRelease[].class));
-			if (latestRelease != null && !latestRelease.getSha().startsWith(Titan.version())) {
-				Titan.log(latestRelease.getSha());
-				Titan.log(Titan.version());
-				updateStatus = UpdateStatus.AVAILABLE;
-			}
-		} catch (Exception ignore) { } // Rate limit on unauthenticated git requests
+		updateBuildDate();
+
+		Titan.log("Checking for Modrinth update");
+
+		List<ModrinthVersion> modrinthVersions = Arrays.stream(getModrinthVersions())
+				.filter(version -> Arrays.asList(version.getGame_versions()).contains(mcVersion))
+				.toList();
+
+		Titan.log("Found " + modrinthVersions.size() + " possible version" + (modrinthVersions.size() == 1 ? "" : "s"));
+
+		ModrinthVersion modrinthVersion = modrinthVersions.stream()
+				// Build Date will always be before the modrinth publish date. Check that the new version is at least 2 minutes older than current
+				.filter(version -> {
+					long diffInMillies = Math.abs(buildDate.getTime() - version.getDatePublished().getTime());
+					long diff = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
+					return diff >= 2;
+				})
+				.min(Comparator.comparing(ModrinthVersion::getDatePublished))
+				.orElse(null);
+
+		if (modrinthVersion == null)
+			return;
+
+		if (buildDate.after(modrinthVersion.getDatePublished()))
+			return;
+
+		Titan.log("Found Modrinth update!");
+
+		updateStatus = UpdateStatus.AVAILABLE;
 	}
+
+	private static void updateBuildDate() {
+		if (buildDate == null) {
+			String date = Utils.getManifestAttribute("Build-Timestamp");
+            buildDate = Utils.ISODate(date);
+        }
+	}
+
+	private static ModrinthVersion[] getModrinthVersions() {
+		try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
+			HttpGet request = new HttpGet("https://api.modrinth.com/v2/project/" + Titan.MODRINTH_SLUG +"/version");
+			request.addHeader("Accept", "application/json");
+			request.addHeader("Authorization", Titan.MODRINTH_TOKEN);
+			CloseableHttpResponse response = client.execute(request);
+			return new Gson().fromJson(EntityUtils.toString(response.getEntity()), ModrinthVersion[].class);
+		} catch (Exception e) {
+			Titan.log("Error while getting Modrinth version");
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 }

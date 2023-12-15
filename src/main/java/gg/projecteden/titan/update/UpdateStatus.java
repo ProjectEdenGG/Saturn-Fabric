@@ -5,10 +5,7 @@ import net.minecraft.text.Text;
 
 public enum UpdateStatus {
 	NONE(Tooltip.of(Text.of("Connect directly to projecteden.gg"))),
-	AVAILABLE(Tooltip.of(Text.of("An update for Titan is available. Click to update automatically. This will close your game."))),
-	DOWNLOADING(Tooltip.of(Text.of("Downloading..."))),
-	ERROR(Tooltip.of(Text.of("An error occurred while updating Titan. Please report this to the Project Eden Staff."))),
-	DONE(Tooltip.of(Text.of("Download complete. Stopping game...")));
+	AVAILABLE(Tooltip.of(Text.of("An update for Titan is available. Shift-Click to open the mod's page")));
 
 	final Tooltip titleScreenTooltip;
 

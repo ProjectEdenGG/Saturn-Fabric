@@ -23,8 +23,9 @@ public class Titan implements ModInitializer {
 	public static Logger LOGGER = LogManager.getLogger();
 	public static final Identifier PE_LOGO_IDEN = new Identifier(MOD_ID, "main-menu-button.png");
 	public static final Identifier UPDATE_AVAILABLE = new Identifier(MOD_ID, "exclamation-mark.png");
-
-
+	public static final String MODRINTH_URL = "https://modrinth.com/mod/titan";
+	public static final String MODRINTH_SLUG = "f44hEoWP";
+	public static final String MODRINTH_TOKEN = "mrp_oyEJu5NksuJpOuRNQmHoisTES9DFdMMzATX8gFhySvNqVbHcHEzM8WD9Za7V";
 
 	public static void log(String message, Object... objects) {
 		LOGGER.log(Level.INFO, String.format(PREFIX + message, objects));
