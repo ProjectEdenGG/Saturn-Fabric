@@ -34,19 +34,13 @@ public class TitanUpdater {
 		Titan.log("Found " + modrinthVersions.size() + " possible version" + (modrinthVersions.size() == 1 ? "" : "s"));
 
 		ModrinthVersion modrinthVersion = modrinthVersions.stream()
-				// Build Date will always be before the modrinth publish date. Check that the new version is at least 2 minutes older than current
-				.filter(version -> {
-					long diffInMillies = Math.abs(buildDate.getTime() - version.getDatePublished().getTime());
-					long diff = TimeUnit.MINUTES.convert(diffInMillies, TimeUnit.MILLISECONDS);
-					return diff >= 2;
-				})
-				.min(Comparator.comparing(ModrinthVersion::getDatePublished))
+				.max(Comparator.comparing(ModrinthVersion::getDatePublished))
 				.orElse(null);
 
 		if (modrinthVersion == null)
 			return;
 
-		if (buildDate.after(modrinthVersion.getDatePublished()))
+		if (modrinthVersion.getVersion_number().equals(Titan.version()))
 			return;
 
 		Titan.log("Found Modrinth update!");
