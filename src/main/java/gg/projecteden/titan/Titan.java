@@ -10,7 +10,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.minecraft.client.gui.screen.ButtonTextures;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class Titan implements ModInitializer {
+	public static boolean debug = false;
 	public static final String MOD_ID = "titan";
 	public static final String PREFIX = String.format("[%s] ", Titan.class.getSimpleName());
 	public static Logger LOGGER = LogManager.getLogger();
@@ -29,6 +31,13 @@ public class Titan implements ModInitializer {
 
 	public static void log(String message, Object... objects) {
 		LOGGER.log(Level.INFO, String.format(PREFIX + message, objects));
+	}
+
+	public static void debug(String message) {
+		if (!debug || MinecraftClient.getInstance() == null)
+			return;
+
+		MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.of(message));
 	}
 
 	@NotNull
@@ -45,6 +54,9 @@ public class Titan implements ModInitializer {
 	public void onInitialize() {
 		TitanUpdater.checkForUpdates();
 		Config.load();
+		if(debug)
+			log("Debugging is enabled");
+
 		if (Saturn.mode != SaturnUpdater.Mode.TEXTURE_RELOAD)
 			Saturn.update();
 		Events.register();
