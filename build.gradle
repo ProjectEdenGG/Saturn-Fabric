@@ -81,6 +81,10 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
+}
+
+remapJar {
+	// Set the final name of the jar! This needs to be exactly this for the auto-update function to work!
 	archiveFileName = "titan.jar"
 }
 
