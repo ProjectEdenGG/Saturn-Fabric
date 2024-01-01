@@ -17,7 +17,7 @@ public class SplashOverlayMixin {
 
 	@Inject(method = "renderProgressBar", at = @At("RETURN"))
 	private void start(DrawContext matrices, int minX, int minY, int maxX, int maxY, float opacity, CallbackInfo ci) {
-		if (this.progress > 0.95F) {
+		if (this.progress > 0.5F) {
 			for (Runnable runnable : Saturn.queuedProcesses)
 				runnable.run();
 			Saturn.queuedProcesses.clear();
