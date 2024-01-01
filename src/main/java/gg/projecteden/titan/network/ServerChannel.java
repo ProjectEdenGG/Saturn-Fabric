@@ -11,7 +11,6 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import static gg.projecteden.titan.Titan.MOD_ID;

@@ -6,19 +6,15 @@ import gg.projecteden.titan.update.TitanUpdater;
 import gg.projecteden.titan.update.UpdateStatus;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.screen.multiplayer.ConnectScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextIconButtonWidget;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.ServerList;
-import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -63,24 +59,9 @@ public class TitleScreenMixin extends Screen {
 		if (modMenu)
 			y -= spacingY;
 		ButtonWidget.PressAction action = button -> {
-			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE) {
-                button.setTooltip(UpdateStatus.DOWNLOADING.getTitleScreenTooltip());
-				TitanUpdater.downloadUpdate().thenAccept(bool -> {
-					if (bool) {
-						TitanUpdater.updateStatus = UpdateStatus.DONE;
-                        button.setTooltip(UpdateStatus.DONE.getTitleScreenTooltip());
-						new Thread(() -> {
-							try { Thread.sleep(2000);
-							} catch (InterruptedException ignore) { }
-							MinecraftClient.getInstance().stop();
-						}).start();
-					}
-					else {
-                        TitanUpdater.updateStatus = UpdateStatus.ERROR;
-                        button.setTooltip(UpdateStatus.ERROR.getTitleScreenTooltip());
-                    }
-				});
-			} else if (TitanUpdater.updateStatus == UpdateStatus.NONE)
+			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE && Screen.hasShiftDown()) {
+				Util.getOperatingSystem().open(Titan.MODRINTH_URL);
+			} else
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false);
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action)
@@ -113,4 +94,5 @@ public class TitleScreenMixin extends Screen {
 			});
 		}
 	}
+
 }

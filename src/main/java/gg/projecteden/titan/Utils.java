@@ -1,6 +1,7 @@
 package gg.projecteden.titan;
 
 import com.google.gson.Gson;
+import gg.projecteden.titan.update.TitanUpdater;
 import joptsimple.internal.Strings;
 import lombok.SneakyThrows;
 import net.minecraft.client.MinecraftClient;
@@ -13,11 +14,19 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Scanner;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 public class Utils {
+
+	private static SimpleDateFormat ISOFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
 	@SneakyThrows
 	public static String bash(String command, File directory) {
@@ -59,6 +68,30 @@ public class Utils {
 			Titan.log("An error occurred while checking git versioning. Rate limit reached?");
 			ex.printStackTrace();
 		}
+		return null;
+	}
+
+	public static String getManifestAttribute(String attribute) {
+		try {
+			URL jarURL = Utils.class.getResource("/gg/projecteden/titan/Titan.class");
+            if (jarURL == null)
+				return "";
+            JarURLConnection jurlConn = (JarURLConnection) jarURL.openConnection();
+			Manifest manifest = jurlConn.getManifest();
+			return manifest.getMainAttributes().getValue(attribute);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	public static String ISODate(Date date) {
+		return ISOFormatter.format(date);
+	}
+
+	public static Date ISODate(String date) {
+		try { return ISOFormatter.parse(date); }
+		catch (ParseException e) { e.printStackTrace(); }
 		return null;
 	}
 

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import net.fabricmc.loader.api.FabricLoader;
@@ -22,12 +23,12 @@ public class Config {
 
 	public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private final static Path GAME_CONFIG_DIR = FabricLoader.getInstance().getConfigDir();
-	private final static Path TITAN_CONFIG_DIR = GAME_CONFIG_DIR.resolve(MOD_ID);
-
 	private final static File CONFIG_FILE = new File(configDir(), MOD_ID + ".json");
 
+	private static boolean hasDebug;
+
 	public static File configDir() {
-		File mapConfigDir = TITAN_CONFIG_DIR.toFile();
+		File mapConfigDir = GAME_CONFIG_DIR.toFile();
 		if (!mapConfigDir.exists()) {
 			mapConfigDir.mkdirs();
 		}
@@ -43,7 +44,9 @@ public class Config {
 			return jsonObject;
 		}
 
-		return new JsonObject();
+		save();
+
+		return getJsonObject(CONFIG_FILE);
 	}
 
 	public static JsonElement loadJson(File jsonFile) {
@@ -78,6 +81,10 @@ public class Config {
 		jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
 		jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);
 		jsonObject.addProperty("saturn-enabled-default", Saturn.enabledByDefault);
+
+		if(hasDebug)
+			jsonObject.addProperty("debug", Titan.debug);
+
 		storeJson(CONFIG_FILE, jsonObject);
 	}
 
@@ -91,6 +98,11 @@ public class Config {
 			Saturn.manageStatus = JsonHelper.getBoolean(json, "saturn-manage-status");
 		if (json.has("saturn-enabled-default"))
 			Saturn.enabledByDefault = JsonHelper.getBoolean(json, "saturn-enabled-default");
+
+		if(json.has("debug")) {
+			Titan.debug = true;
+			hasDebug = true;
+		}
 	}
 
 }
