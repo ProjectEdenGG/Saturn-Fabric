@@ -15,7 +15,7 @@ public class Saturn {
 
 	@Getter
 	private static final SaturnUpdater updater = SaturnUpdater.GIT;
-	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.START_UP;
+	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.BOTH;
 	public static SaturnUpdater.Env env = SaturnUpdater.Env.PROD;
 	public static boolean hardReset = true;
 	public static boolean manageStatus = false;
