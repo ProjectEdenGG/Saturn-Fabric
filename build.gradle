@@ -96,11 +96,6 @@ remapJar {
 	archiveFileName = "titan.jar"
 }
 
-remapJar {
-	// Set the final name of the jar! This needs to be exactly this for the auto-update function to work!
-	archiveFileName = "titan.jar"
-}
-
 // configure the maven publication
 publishing {
 	publications {
@@ -134,7 +129,7 @@ modrinth {
 	uploadFile = "./build/libs/titan.jar"
 	dependencies {
 		required.project "fabric-api"
-		optional.project "cloth-config"
-		optional.project "modmenu"
+		required.project "cloth-config"
+		required.project "modmenu"
 	}
 }
