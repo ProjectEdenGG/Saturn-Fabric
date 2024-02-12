@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier;
 import java.util.Objects;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
-import static gg.projecteden.titan.Utils.isOnEden;
+import static gg.projecteden.titan.utils.Utils.isOnEden;
 
 public class ServerChannel {
 

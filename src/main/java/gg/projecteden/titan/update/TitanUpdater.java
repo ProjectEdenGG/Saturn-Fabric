@@ -2,7 +2,7 @@ package gg.projecteden.titan.update;
 
 import com.google.gson.Gson;
 import gg.projecteden.titan.Titan;
-import gg.projecteden.titan.Utils;
+import gg.projecteden.titan.utils.Utils;
 import net.minecraft.client.MinecraftClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class TitanUpdater {
 

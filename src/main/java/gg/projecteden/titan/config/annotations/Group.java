@@ -9,5 +9,6 @@ public @interface Group {
 
     String Saturn = "Saturn";
     String Utilities = "Utilities";
+    String Backpacks = "Backpacks";
 
 }

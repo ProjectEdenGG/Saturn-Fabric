@@ -1,0 +1,133 @@
+package gg.projecteden.titan.mixin;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import gg.projecteden.titan.config.ConfigItem;
+import gg.projecteden.titan.utils.InventoryOverlay;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.render.DiffuseLighting;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.DyeableHorseArmorItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.awt.*;
+import java.util.List;
+
+import static gg.projecteden.titan.utils.Utils.getStoredItems;
+
+@Mixin(HandledScreen.class)
+public class HandledScreenMixin {
+    @Shadow @Nullable protected Slot focusedSlot;
+
+    @Inject(method = "drawMouseoverTooltip", at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
+            target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V"), cancellable = true)
+    private void onRenderTooltip(DrawContext drawContext, int x, int y, CallbackInfo ci) {
+        if (!ConfigItem.DO_BACKPACK_PREVIEWS.getValue())
+            return;
+
+        if (ConfigItem.PREVIEWS_REQUIRE_SHIFT.getValue() && !Screen.hasShiftDown())
+            return;
+
+        if (this.focusedSlot != null && this.focusedSlot.hasStack())
+            onRenderTooltipLast(drawContext, this.focusedSlot.getStack(), x, y, ci);
+    }
+
+    @Unique
+    private void onRenderTooltipLast(DrawContext context, ItemStack stack, int x, int y, CallbackInfo ci) {
+        if (!stack.hasNbt())
+            return;
+
+        if (getStoredItems(stack).isEmpty()) {
+            return;
+        }
+
+        renderItemContentsPreview(stack, x, y, context, ci);
+    }
+
+    @Unique
+    public void renderItemContentsPreview(ItemStack stack, int baseX, int baseY, DrawContext drawContext, CallbackInfo ci) {
+        DefaultedList<ItemStack> items = getStoredItems(stack);
+
+        InventoryOverlay.InventoryRenderType type = getType(stack);
+        InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, items.size());
+
+        int screenWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
+        int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
+        int height = props.height + 18;
+        int x = MathHelper.clamp(baseX + 8     , 0, screenWidth - props.width);
+        int y = MathHelper.clamp(baseY - height, 0, screenHeight - height);
+
+        if (baseY - height != y) { // it has been clamped to not go off the screen - cancel rendering the actual tooltip because it renders on top
+            ci.cancel();
+        }
+
+        if (ConfigItem.USE_BACKGROUND_COLORS.getValue() && stack.getItem() instanceof DyeableHorseArmorItem dyeable) {
+            if (!dyeable.hasColor(stack))
+                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            else {
+                Color color = new Color(dyeable.getColor(stack));
+                RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
+            }
+        }
+        else
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+
+        DiffuseLighting.disableGuiDepthLighting();
+
+        MatrixStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.push();
+        matrixStack.translate(0, 0, 500);
+        RenderSystem.applyModelViewMatrix();
+
+        InventoryOverlay.renderInventoryBackground(type, x, y);
+
+        DiffuseLighting.enableGuiDepthLighting();
+
+        Inventory inv = getAsInventory(items);
+        InventoryOverlay.renderInventoryStacks(type, inv, x + props.slotOffsetX, y + props.slotOffsetY, props.slotsPerRow, 0, -1, MinecraftClient.getInstance(), drawContext);
+
+        matrixStack.pop();
+        RenderSystem.applyModelViewMatrix();
+    }
+
+    @Unique
+    private InventoryOverlay.InventoryRenderType getType(ItemStack stack) {
+        NbtCompound nbt = stack.getNbt();
+        if (nbt == null)
+            return InventoryOverlay.InventoryRenderType.FIXED_27;
+
+        if (nbt.contains("BP_TIER_NETHERITE") || nbt.contains("BP_TIER_DIAMOND"))
+            return InventoryOverlay.InventoryRenderType.FIXED_54;
+        if (nbt.contains("BP_TIER_GOLD"))
+            return InventoryOverlay.InventoryRenderType.FIXED_45;
+        if (nbt.contains("BP_TIER_IRON"))
+            return InventoryOverlay.InventoryRenderType.FIXED_36;
+        return InventoryOverlay.InventoryRenderType.FIXED_27;
+    }
+
+    @Unique
+    private Inventory getAsInventory(List<ItemStack> items) {
+        SimpleInventory inv = new SimpleInventory(items.size());
+
+        for (int slot = 0; slot < items.size(); ++slot)
+            inv.setStack(slot, items.get(slot));
+
+        return inv;
+    }
+
+}

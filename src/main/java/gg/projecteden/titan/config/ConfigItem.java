@@ -1,6 +1,9 @@
 package gg.projecteden.titan.config;
 
-import gg.projecteden.titan.config.annotations.*;
+import gg.projecteden.titan.config.annotations.Description;
+import gg.projecteden.titan.config.annotations.Group;
+import gg.projecteden.titan.config.annotations.Name;
+import gg.projecteden.titan.config.annotations.OldConfig;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static gg.projecteden.titan.config.annotations.Group.Saturn;
-import static gg.projecteden.titan.config.annotations.Group.Utilities;
+import static gg.projecteden.titan.config.annotations.Group.*;
 
 @Getter
 @Setter
@@ -89,10 +91,19 @@ public class ConfigItem<T> {
                             This prevents flickering and has no impact on performance.""")
     public static final ConfigItem<Boolean> STOP_ENTITY_CULLING = new ConfigItem<>(true);
 
-    @Disabled
-    @Group(Utilities)
+    @Group(Backpacks)
     @Name("Show Backpack Previews")
     @Description("Should Titan render previews of Backpacks\nwhen hovered in your inventory?")
     public static final ConfigItem<Boolean> DO_BACKPACK_PREVIEWS = new ConfigItem<>(true);
+
+    @Group(Backpacks)
+    @Name("Backpack Previews Require Shift-Key")
+    @Description("Should Backpack previews only show\nwhile the shift-key is pressed?")
+    public static final ConfigItem<Boolean> PREVIEWS_REQUIRE_SHIFT = new ConfigItem<>(true);
+
+    @Group(Backpacks)
+    @Name("Use Backpack Colors")
+    @Description("Should Backpack previews use the color of the Backpack?")
+    public static final ConfigItem<Boolean> USE_BACKGROUND_COLORS = new ConfigItem<>(true);
 
 }

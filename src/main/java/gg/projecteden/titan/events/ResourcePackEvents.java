@@ -20,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
-import static gg.projecteden.titan.Utils.isOnEden;
 import static gg.projecteden.titan.config.ConfigItem.*;
+import static gg.projecteden.titan.utils.Utils.isOnEden;
 
 public class ResourcePackEvents {
 

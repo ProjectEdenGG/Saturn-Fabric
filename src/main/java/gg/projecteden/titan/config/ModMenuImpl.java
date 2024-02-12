@@ -6,8 +6,6 @@ import gg.projecteden.titan.config.annotations.Description;
 import gg.projecteden.titan.config.annotations.Disabled;
 import gg.projecteden.titan.config.annotations.Group;
 import gg.projecteden.titan.config.annotations.Name;
-import gg.projecteden.titan.saturn.Saturn;
-import gg.projecteden.titan.saturn.SaturnUpdater;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -19,7 +17,7 @@ import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static gg.projecteden.titan.Utils.camelCase;
+import static gg.projecteden.titan.utils.Utils.camelCase;
 
 public class ModMenuImpl implements ModMenuApi {
 

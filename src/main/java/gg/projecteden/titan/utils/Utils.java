@@ -1,11 +1,15 @@
-package gg.projecteden.titan;
+package gg.projecteden.titan.utils;
 
 import com.google.gson.Gson;
-import gg.projecteden.titan.update.TitanUpdater;
+import gg.projecteden.titan.Titan;
 import joptsimple.internal.Strings;
 import lombok.SneakyThrows;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.util.collection.DefaultedList;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -93,6 +97,35 @@ public class Utils {
 		try { return ISOFormatter.parse(date); }
 		catch (ParseException e) { e.printStackTrace(); }
 		return null;
+	}
+
+
+	public static DefaultedList<ItemStack> getStoredItems(ItemStack stack) {
+		if (!stack.hasNbt())
+			return DefaultedList.of();
+
+		NbtCompound nbt = stack.getNbt();
+
+		if (nbt != null && nbt.contains("ProjectEden")) {
+			NbtCompound projectEden = nbt.getCompound("ProjectEden");
+
+			if (projectEden.contains("Items")) {
+				DefaultedList<ItemStack> items = DefaultedList.of();
+				NbtList tagList = projectEden.getList("Items", 10);
+				final int count = tagList.size();
+
+				for (int i = 0; i < count; ++i) {
+					ItemStack _stack = ItemStack.fromNbt(tagList.getCompound(i));
+
+					if (!_stack.isEmpty())
+						items.add(_stack);
+				}
+
+				return items;
+			}
+		}
+
+		return DefaultedList.of();
 	}
 
 }

@@ -1,6 +1,6 @@
 package gg.projecteden.titan.update;
 
-import gg.projecteden.titan.Utils;
+import gg.projecteden.titan.utils.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

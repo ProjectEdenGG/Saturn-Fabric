@@ -18,8 +18,8 @@ import org.jetbrains.annotations.NotNull;
 import java.nio.file.Path;
 import java.util.List;
 
-import static gg.projecteden.titan.Utils.getGitResponse;
 import static gg.projecteden.titan.saturn.Saturn.PATH;
+import static gg.projecteden.titan.utils.Utils.getGitResponse;
 
 public enum SaturnUpdater {
 	GIT {
