@@ -1,5 +1,6 @@
 package gg.projecteden.titan.mixin;
 
+import gg.projecteden.titan.config.ConfigItem;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
@@ -17,6 +18,9 @@ public class EntityRendererMixin {
 
 	@Inject(at = @At("HEAD"), method = "shouldRender", cancellable = true)
 	private void shouldRender(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> info) {
+		if (!ConfigItem.STOP_ENTITY_CULLING.getValue())
+			return;
+
 		if (!(entity instanceof ArmorStandEntity || entity instanceof ItemFrameEntity))
 			return;
 

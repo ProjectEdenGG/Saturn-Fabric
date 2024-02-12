@@ -5,9 +5,14 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import gg.projecteden.titan.Titan;
+import gg.projecteden.titan.config.annotations.Disabled;
+import gg.projecteden.titan.config.annotations.Group;
+import gg.projecteden.titan.config.annotations.Name;
+import gg.projecteden.titan.config.annotations.OldConfig;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.text.Text;
 import net.minecraft.util.JsonHelper;
 
 import java.io.File;
@@ -15,6 +20,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
@@ -77,10 +83,34 @@ public class Config {
 	public static void save() {
 		JsonObject jsonObject = new JsonObject();
 
-		jsonObject.addProperty("saturn-hard-reset", Saturn.hardReset);
-		jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
-		jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);
-		jsonObject.addProperty("saturn-enabled-default", Saturn.enabledByDefault);
+		for (Field field : ConfigItem.getAll()) {
+			try {
+				if (field.isAnnotationPresent(Disabled.class))
+					continue;
+
+				ConfigItem item = (ConfigItem) field.get(null);
+				String group = field.getAnnotation(Group.class).value();
+				String name = field.getAnnotation(Name.class).config().isEmpty() ? field.getName() : field.getAnnotation(Name.class).config();
+
+				name = name.toLowerCase().replace("_", "-").replace(" ", "-");
+
+				if (!jsonObject.has(group))
+					jsonObject.add(group, new JsonObject());
+
+				JsonObject jsonGroup = jsonObject.getAsJsonObject(group);
+
+				switch (item.getType()) {
+                    case BOOLEAN -> jsonGroup.addProperty(name, (Boolean) item.getValue());
+                    case ENUM -> jsonGroup.addProperty(name, ((Enum) item.getValue()).name().toLowerCase());
+                    case INTEGER -> jsonGroup.addProperty(name, (Integer) item.getValue());
+                    case DOUBLE -> jsonGroup.addProperty(name, (Double) item.getValue());
+                    case STRING -> jsonGroup.addProperty(name, (String) item.getValue());
+                }
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 
 		if(hasDebug)
 			jsonObject.addProperty("debug", Titan.debug);
@@ -90,19 +120,68 @@ public class Config {
 
 	public static void load() {
 		JsonObject json = getJsonObject(CONFIG_FILE);
-		if (json.has("saturn-hard-reset"))
-			Saturn.hardReset = JsonHelper.getBoolean(json, "saturn-hard-reset");
-		if (json.has("saturn-update-mode"))
-			Saturn.mode = SaturnUpdater.Mode.valueOf(JsonHelper.getString(json, "saturn-update-mode").toUpperCase());
-		if (json.has("saturn-manage-status"))
-			Saturn.manageStatus = JsonHelper.getBoolean(json, "saturn-manage-status");
-		if (json.has("saturn-enabled-default"))
-			Saturn.enabledByDefault = JsonHelper.getBoolean(json, "saturn-enabled-default");
+
+		for (Field field : ConfigItem.getAll()) {
+			try {
+				if (field.isAnnotationPresent(Disabled.class))
+					continue;
+
+				ConfigItem item = (ConfigItem) field.get(null);
+
+				if (field.isAnnotationPresent(OldConfig.class)) {
+					String group = field.getAnnotation(OldConfig.class).group();
+					String name = field.getAnnotation(OldConfig.class).value();
+
+					if (json.has(group)) {
+						JsonObject jsonObject = json.getAsJsonObject(group);
+						if (jsonObject.has(name))
+							load(item, jsonObject, name);
+						else
+							load(item, jsonObject, field.getName());
+					}
+					else {
+						if (json.has(name))
+							load(item, json, name);
+					}
+				}
+				else {
+					String group = field.getAnnotation(Group.class).value();
+					String name = field.getAnnotation(Name.class).config().isEmpty() ? field.getName() : field.getAnnotation(Name.class).config();
+					name = name.toLowerCase().replace("_", "-").replace(" ", "-");
+					if (json.has(group))
+						load(item, json.getAsJsonObject(group), name);
+					else
+						load(item, json, name);
+				}
+
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 
 		if(json.has("debug")) {
 			Titan.debug = true;
 			hasDebug = true;
 		}
+	}
+
+	private static void load(ConfigItem item, JsonObject json, String path) {
+		path = path.toLowerCase().replace("_", "-");
+
+		if (!json.has(path))
+			return;
+
+		Object val = switch (item.getType()) {
+            case BOOLEAN -> JsonHelper.getBoolean(json, path);
+            case ENUM -> Enum.valueOf((Class) item.getValue().getClass(), JsonHelper.getString(json, path).toUpperCase());
+            case INTEGER -> JsonHelper.getInt(json, path);
+            case DOUBLE -> JsonHelper.getDouble(json, path);
+            case STRING -> JsonHelper.getString(json, path);
+            case UNKNOWN -> null;
+        };
+
+		item.setValue(val);
 	}
 
 }

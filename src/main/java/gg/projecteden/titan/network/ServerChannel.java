@@ -2,6 +2,7 @@ package gg.projecteden.titan.network;
 
 import com.google.gson.JsonObject;
 import gg.projecteden.titan.Titan;
+import gg.projecteden.titan.config.ConfigItem;
 import gg.projecteden.titan.saturn.Saturn;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -47,10 +48,10 @@ public class ServerChannel {
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.addProperty("titan", titanVersion);
 			jsonObject.addProperty("saturn", saturnVersion);
-			jsonObject.addProperty("saturn-hard-reset", Saturn.hardReset);
-			jsonObject.addProperty("saturn-update-mode", Saturn.mode.name().toLowerCase());
-			jsonObject.addProperty("saturn-manage-status", Saturn.manageStatus);
-			jsonObject.addProperty("saturn-enabled-default", Saturn.enabledByDefault);
+			jsonObject.addProperty("saturn-hard-reset", ConfigItem.SATURN_HARD_RESET.getValue());
+			jsonObject.addProperty("saturn-update-mode", ConfigItem.SATURN_UPDATE_INSTANCES.getValue().name().toLowerCase());
+			jsonObject.addProperty("saturn-manage-status", ConfigItem.SATURN_MANAGE_STATUS.getValue());
+			jsonObject.addProperty("saturn-enabled-default", ConfigItem.SATURN_ENABLED_DEFAULT.getValue());
 
 			ServerChannel.send(jsonObject.toString());
 		} catch (Exception ex) {

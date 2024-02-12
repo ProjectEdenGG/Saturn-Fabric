@@ -15,13 +15,9 @@ public class Saturn {
 
 	@Getter
 	private static final SaturnUpdater updater = SaturnUpdater.GIT;
-	public static SaturnUpdater.Mode mode = SaturnUpdater.Mode.BOTH;
 	public static SaturnUpdater.Env env = SaturnUpdater.Env.PROD;
-	public static boolean hardReset = true;
-	public static boolean manageStatus = false;
 	public static final Path PATH = FabricLoader.getInstance().getGameDir().resolve("resourcepacks/Saturn");
 	public static final Path DOT_GIT_PATH = PATH.resolve(".git");
-	public static boolean enabledByDefault = true;
 
 	public static List<Runnable> queuedProcesses = new ArrayList<>();
 

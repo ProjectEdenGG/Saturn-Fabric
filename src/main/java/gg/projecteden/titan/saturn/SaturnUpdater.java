@@ -1,6 +1,7 @@
 package gg.projecteden.titan.saturn;
 
 import gg.projecteden.titan.Titan;
+import gg.projecteden.titan.config.ConfigItem;
 import gg.projecteden.titan.update.GitResponse;
 import joptsimple.internal.Strings;
 import lombok.SneakyThrows;
@@ -69,7 +70,7 @@ public enum SaturnUpdater {
 		public String update() {
 			Titan.log("Updating Saturn via jgit");
 			try (Git git = git()) {
-				if (Saturn.hardReset)
+				if (ConfigItem.SATURN_HARD_RESET.getValue())
 					git.reset().setMode(ResetType.HARD).setRef("origin/" + git.getRepository().getBranch()).call();
 
 				updateAvailable = false;

@@ -21,6 +21,7 @@ import java.util.concurrent.Executor;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
 import static gg.projecteden.titan.Utils.isOnEden;
+import static gg.projecteden.titan.config.ConfigItem.*;
 
 public class ResourcePackEvents {
 
@@ -36,7 +37,7 @@ public class ResourcePackEvents {
 		ClientPlayConnectionEvents.JOIN.register(((handler, sender, client) -> {
 			if (isOnEden()) {
 				Saturn.env = handler.getConnection().getAddress().toString().contains("25565") ? SaturnUpdater.Env.PROD : SaturnUpdater.Env.TEST;
-				if (Saturn.manageStatus)
+				if (SATURN_MANAGE_STATUS.getValue())
 					Saturn.enable();
 				ServerChannel.reportToEden();
 			}
@@ -44,12 +45,12 @@ public class ResourcePackEvents {
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> {
 			TitanUpdater.checkForUpdates();
 			Saturn.env = SaturnUpdater.Env.PROD;
-			if (Saturn.manageStatus)
+			if (SATURN_MANAGE_STATUS.getValue())
 				Saturn.disable();
 		}));
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-			if (Saturn.enabledByDefault)
+			if (SATURN_ENABLED_DEFAULT.getValue())
 				Saturn.enable();
 		});
 
@@ -63,7 +64,7 @@ public class ResourcePackEvents {
 
 			@Override
 			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || (Saturn.mode == SaturnUpdater.Mode.BOTH || Saturn.mode == SaturnUpdater.Mode.TEXTURE_RELOAD))) {
+				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || SATURN_UPDATE_INSTANCES.getValue() != SaturnUpdater.Mode.START_UP)) {
 					Saturn.queueProcess(() -> {
 						if (Saturn.update()) {
 							long thisReload = System.currentTimeMillis(); // Cooldown on forced reload. Should hopefully solve infinite loops
