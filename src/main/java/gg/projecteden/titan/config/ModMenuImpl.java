@@ -2,6 +2,7 @@ package gg.projecteden.titan.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.config.annotations.Description;
 import gg.projecteden.titan.config.annotations.Disabled;
 import gg.projecteden.titan.config.annotations.Group;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 import static gg.projecteden.titan.utils.Utils.camelCase;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ModMenuImpl implements ModMenuApi {
 
 	@Override
@@ -63,6 +65,14 @@ public class ModMenuImpl implements ModMenuApi {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+		}
+
+		if (Screen.hasControlDown()) {
+			builder.getOrCreateCategory(Text.literal("Developer")).addEntry(
+					entryBuilder.startBooleanToggle(Text.literal("Debug"), Titan.debug)
+							.setSaveConsumer(val -> Titan.debug = val)
+							.build()
+			);
 		}
 
 		builder.setDoesConfirmSave(false);

@@ -4,6 +4,7 @@ import gg.projecteden.titan.command.TitanCommand;
 import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.config.ConfigItem;
 import gg.projecteden.titan.events.Events;
+import gg.projecteden.titan.network.ServerClientMessaging;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import gg.projecteden.titan.update.TitanUpdater;
@@ -55,8 +56,6 @@ public class Titan implements ModInitializer {
 	public void onInitialize() {
 		TitanUpdater.checkForUpdates();
 		Config.load();
-		if(debug)
-			log("Debugging is enabled");
 
 		if (ConfigItem.SATURN_UPDATE_INSTANCES.getValue() != SaturnUpdater.Mode.TEXTURE_RELOAD)
 			Saturn.update();
@@ -64,6 +63,8 @@ public class Titan implements ModInitializer {
 		if (ConfigItem.SATURN_MANAGE_STATUS.getValue() && !ConfigItem.SATURN_ENABLED_DEFAULT.getValue())
 			Saturn.disable();
 		ClientCommandRegistrationCallback.EVENT.register(TitanCommand::init);
+
+		ServerClientMessaging.init();
 	}
 
 

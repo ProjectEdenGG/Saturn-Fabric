@@ -1,6 +1,9 @@
 package gg.projecteden.titan.events;
 
-import gg.projecteden.titan.network.ServerChannel;
+import gg.projecteden.titan.network.ServerClientMessaging;
+import gg.projecteden.titan.network.serverbound.Handshake;
+import gg.projecteden.titan.network.serverbound.TitanConfig;
+import gg.projecteden.titan.network.serverbound.Versions;
 import gg.projecteden.titan.saturn.Saturn;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import gg.projecteden.titan.update.TitanUpdater;
@@ -39,7 +42,9 @@ public class ResourcePackEvents {
 				Saturn.env = handler.getConnection().getAddress().toString().contains("25565") ? SaturnUpdater.Env.PROD : SaturnUpdater.Env.TEST;
 				if (SATURN_MANAGE_STATUS.getValue())
 					Saturn.enable();
-				ServerChannel.reportToEden();
+				ServerClientMessaging.send(new Handshake());
+				ServerClientMessaging.send(new Versions());
+				ServerClientMessaging.send(new TitanConfig());
 			}
 		}));
 		ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> {
@@ -75,7 +80,7 @@ public class ResourcePackEvents {
 							MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
 						}
 
-						ServerChannel.reportToEden();
+						ServerClientMessaging.send(new Versions());
 					});
 				}
 				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);

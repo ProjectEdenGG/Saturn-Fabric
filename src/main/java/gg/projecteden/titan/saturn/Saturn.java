@@ -1,7 +1,8 @@
 package gg.projecteden.titan.saturn;
 
 import gg.projecteden.titan.Titan;
-import gg.projecteden.titan.network.ServerChannel;
+import gg.projecteden.titan.network.ServerClientMessaging;
+import gg.projecteden.titan.network.serverbound.Versions;
 import lombok.Getter;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
@@ -33,7 +34,7 @@ public class Saturn {
 				Titan.log("Not updating as Saturn is already up-to-date");
 				return false;
 			}
-			ServerChannel.reportToEden();
+			ServerClientMessaging.send(new Versions());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			return false;

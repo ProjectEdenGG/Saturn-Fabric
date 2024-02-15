@@ -4,22 +4,16 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.config.annotations.Disabled;
 import gg.projecteden.titan.config.annotations.Group;
 import gg.projecteden.titan.config.annotations.Name;
 import gg.projecteden.titan.config.annotations.OldConfig;
-import gg.projecteden.titan.saturn.Saturn;
-import gg.projecteden.titan.saturn.SaturnUpdater;
+import gg.projecteden.titan.network.ServerClientMessaging;
+import gg.projecteden.titan.network.serverbound.TitanConfig;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
 import net.minecraft.util.JsonHelper;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 
@@ -28,10 +22,8 @@ import static gg.projecteden.titan.Titan.MOD_ID;
 public class Config {
 
 	public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private final static Path GAME_CONFIG_DIR = FabricLoader.getInstance().getConfigDir();
-	private final static File CONFIG_FILE = new File(configDir(), MOD_ID + ".json");
-
-	private static boolean hasDebug;
+	public final static Path GAME_CONFIG_DIR = FabricLoader.getInstance().getConfigDir();
+	public final static File CONFIG_FILE = new File(configDir(), MOD_ID + ".json");
 
 	public static File configDir() {
 		File mapConfigDir = GAME_CONFIG_DIR.toFile();
@@ -112,10 +104,8 @@ public class Config {
 			}
 		}
 
-		if(hasDebug)
-			jsonObject.addProperty("debug", Titan.debug);
-
 		storeJson(CONFIG_FILE, jsonObject);
+		ServerClientMessaging.send(new TitanConfig());
 	}
 
 	public static void load() {
@@ -158,11 +148,6 @@ public class Config {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
-		}
-
-		if(json.has("debug")) {
-			Titan.debug = true;
-			hasDebug = true;
 		}
 	}
 
