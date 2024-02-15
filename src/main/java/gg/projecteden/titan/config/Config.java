@@ -11,6 +11,7 @@ import gg.projecteden.titan.config.annotations.OldConfig;
 import gg.projecteden.titan.network.ServerClientMessaging;
 import gg.projecteden.titan.network.serverbound.TitanConfig;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.JsonHelper;
 
 import java.io.*;
@@ -47,7 +48,7 @@ public class Config {
 		return getJsonObject(CONFIG_FILE);
 	}
 
-	public static JsonElement loadJson(File jsonFile) {
+	public static JsonObject loadJson(File jsonFile) {
 		if (jsonFile.exists()) {
 			try (Reader reader = new FileReader(jsonFile)) {
 				return loadJson(reader);
@@ -55,11 +56,11 @@ public class Config {
 				ex.printStackTrace();
 			}
 		}
-		return null;
+		return new JsonObject();
 	}
 
-	public static JsonElement loadJson(Reader reader) {
-		return GSON.fromJson(reader, JsonElement.class);
+	public static JsonObject loadJson(Reader reader) {
+		return GSON.fromJson(reader, JsonObject.class);
 	}
 
 	public static void storeJson(File jsonFile, JsonElement jsonObject) {
@@ -105,7 +106,8 @@ public class Config {
 		}
 
 		storeJson(CONFIG_FILE, jsonObject);
-		ServerClientMessaging.send(new TitanConfig());
+		if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getNetworkHandler() != null)
+			ServerClientMessaging.send(new TitanConfig());
 	}
 
 	public static void load() {
