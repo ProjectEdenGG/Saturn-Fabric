@@ -3,6 +3,7 @@ package gg.projecteden.titan;
 import gg.projecteden.titan.command.TitanCommand;
 import gg.projecteden.titan.config.Config;
 import gg.projecteden.titan.config.ConfigItem;
+import gg.projecteden.titan.discord.RichPresence;
 import gg.projecteden.titan.events.Events;
 import gg.projecteden.titan.network.ServerClientMessaging;
 import gg.projecteden.titan.saturn.Saturn;
@@ -15,7 +16,6 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -32,14 +32,17 @@ public class Titan implements ModInitializer {
 	public static final String MODRINTH_TOKEN = "mrp_oyEJu5NksuJpOuRNQmHoisTES9DFdMMzATX8gFhySvNqVbHcHEzM8WD9Za7V";
 
 	public static void log(String message, Object... objects) {
-		LOGGER.log(Level.INFO, String.format(PREFIX + message, objects));
+		LOGGER.info(String.format(PREFIX + message, objects));
 	}
 
 	public static void debug(String message) {
-		if (!debug || MinecraftClient.getInstance() == null)
+		if (!debug)
 			return;
 
-		MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.of(message));
+		LOGGER.info(PREFIX + "Debug: " + message);
+
+		if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().inGameHud != null && MinecraftClient.getInstance().inGameHud.getChatHud() != null)
+			MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.literal(PREFIX + message));
 	}
 
 	@NotNull
@@ -65,6 +68,8 @@ public class Titan implements ModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register(TitanCommand::init);
 
 		ServerClientMessaging.init();
+
+		RichPresence.init();
 	}
 
 

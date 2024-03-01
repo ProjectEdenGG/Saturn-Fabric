@@ -16,6 +16,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
@@ -30,14 +31,35 @@ public class ServerClientMessaging {
 	public static final List<Serverbound> toSend = new ArrayList<>();
 
 	public static void send(Serverbound serverbound) {
-		toSend.add(serverbound);
+		if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getNetworkHandler() != null)
+			toSend.add(serverbound);
+		else
+			Titan.debug("Cannot send packets while not online");
 	}
 
 	private static void flush() {
 		if (toSend.isEmpty()) return;
+		if (MinecraftClient.getInstance() == null || MinecraftClient.getInstance().getNetworkHandler() == null) return;
+
+		Collections.reverse(toSend); // Prefer newer messages
 
 		JsonObject json = new JsonObject();
-		toSend.forEach(serverbound -> json.add(serverbound.getType().name().toLowerCase(), GSON.fromJson(serverbound.getJson(), JsonObject.class)));
+		toSend.forEach(serverbound -> {
+			String type = serverbound.getType().name().toLowerCase();
+			Titan.debug("Sending " + type);
+
+			if (json.has(type)) { // Combine like messages
+				JsonObject original = json.getAsJsonObject(type);
+				JsonObject duplicate = GSON.fromJson(serverbound.getJson(), JsonObject.class);
+				duplicate.keySet().forEach(key -> {
+					if (original.has(key))
+						return;
+					original.add(key, duplicate.get(key));
+				});
+			}
+			else
+				json.add(serverbound.getType().name().toLowerCase(), GSON.fromJson(serverbound.getJson(), JsonObject.class));
+		});
 
 		PacketByteBuf packetByteBuf = PacketByteBufs.create();
 		packetByteBuf.writeBytes(GSON.toJson(json).getBytes());

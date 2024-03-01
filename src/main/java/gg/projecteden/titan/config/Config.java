@@ -11,7 +11,6 @@ import gg.projecteden.titan.config.annotations.OldConfig;
 import gg.projecteden.titan.network.ServerClientMessaging;
 import gg.projecteden.titan.network.serverbound.TitanConfig;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.JsonHelper;
 
 import java.io.*;
@@ -20,6 +19,7 @@ import java.nio.file.Path;
 
 import static gg.projecteden.titan.Titan.MOD_ID;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class Config {
 
 	public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -106,8 +106,8 @@ public class Config {
 		}
 
 		storeJson(CONFIG_FILE, jsonObject);
-		if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getNetworkHandler() != null)
-			ServerClientMessaging.send(new TitanConfig());
+
+		ServerClientMessaging.send(new TitanConfig());
 	}
 
 	public static void load() {

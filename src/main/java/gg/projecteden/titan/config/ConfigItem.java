@@ -4,6 +4,7 @@ import gg.projecteden.titan.config.annotations.Description;
 import gg.projecteden.titan.config.annotations.Group;
 import gg.projecteden.titan.config.annotations.Name;
 import gg.projecteden.titan.config.annotations.OldConfig;
+import gg.projecteden.titan.discord.RichPresence;
 import gg.projecteden.titan.saturn.SaturnUpdater;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static gg.projecteden.titan.config.annotations.Group.*;
+import static gg.projecteden.titan.utils.Utils.isOnEden;
 
 @Getter
 @Setter
@@ -39,6 +41,8 @@ public class ConfigItem<T> {
             return Type.STRING;
         return Type.UNKNOWN;
     }
+
+    public void onUpdate() {}
 
     public enum Type {
         BOOLEAN,
@@ -90,6 +94,21 @@ public class ConfigItem<T> {
 
                             This prevents flickering and has no impact on performance.""")
     public static final ConfigItem<Boolean> STOP_ENTITY_CULLING = new ConfigItem<>(true);
+
+    @Group(Utilities)
+    @Name("Discord Rich Presence")
+    @Description("Should we update your Discord Status while on Project Eden")
+    public static final ConfigItem<Boolean> DISCORD_RICH_PRESENCE = new ConfigItem<>(true) {
+        @Override
+        public void onUpdate() {
+            if (!isOnEden())
+                return;
+            if (getValue())
+                RichPresence.start();
+            else
+                RichPresence.stop();
+        }
+    };
 
     @Group(Backpacks)
     @Name("Show Backpack Previews")

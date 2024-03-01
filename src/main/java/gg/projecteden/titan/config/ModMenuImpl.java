@@ -55,7 +55,10 @@ public class ModMenuImpl implements ModMenuApi {
 				if (selector == null)
 					continue;
 
-				selector.setSaveConsumer(item::setValue);
+				selector.setSaveConsumer(val -> {
+					item.setValue(val);
+					item.onUpdate();
+				});
 				selector.setTooltip(description);
 
 				categories.computeIfAbsent(field.isAnnotationPresent(Group.class) ? field.getAnnotation(Group.class).value() : "Default",
