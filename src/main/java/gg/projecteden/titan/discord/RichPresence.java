@@ -9,12 +9,13 @@ import joptsimple.internal.Strings;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
-import java.io.File;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RichPresence {
 
-    static File discordLibrary;
     static boolean disabled;
 
     private static CreateParams params;
@@ -23,13 +24,15 @@ public class RichPresence {
     static Activity tempActivity;
     static boolean started;
 
+    static Map<UpdateType, Runnable> updateQueues = new HashMap<>();
+
     private static void update() {
         if (disabled) return;
         if (core == null) return;
         if (!ConfigItem.DISCORD_RICH_PRESENCE.getValue()) return;
 
         if (mainActivity != null || tempActivity != null)
-            core.runCallbacks();
+            runCallbacks();
     }
 
     public static void start() {
@@ -53,10 +56,8 @@ public class RichPresence {
         }
 
         Titan.debug("Setting details: " + PlayerStates.getWorldDetails());
-        mainActivity.setDetails(PlayerStates.getWorldDetails());
+        update(UpdateType.DETAILS, () -> mainActivity.setDetails(PlayerStates.getWorldDetails()));
 
-        Titan.debug("Updating activity manager");
-        core.activityManager().updateActivity(mainActivity);
         started = true;
     }
 
@@ -64,68 +65,50 @@ public class RichPresence {
         if (disabled) return;
         if (core == null || !core.isOpen()) return;
 
-        if (tempActivity != null)
-            tempActivity.close();
-        if (mainActivity != null)
-            mainActivity.close();
+        try {
+            if (tempActivity != null)
+                tempActivity.close();
+            if (mainActivity != null)
+                mainActivity.close();
 
-        tempActivity = null;
-        mainActivity = null;
+            tempActivity = null;
+            mainActivity = null;
 
-        core.close();
-        core = null;
+            core.close();
+            core = null;
 
-        params.close();
-        params = null;
+            params.close();
+            params = null;
+        } catch (Throwable throwable) {
+            if (throwable.getMessage() != null)
+                Titan.log(throwable.getMessage());
+        }
 
         started = false;
     }
 
     public static void resetTimestamp() {
-        if (disabled) return;
-        if (core == null || !core.isOpen()) return;
-        if (mainActivity == null) return;
-
-        tempActivity = null;
-
         Titan.debug("Returning to main activity");
-        core.activityManager().updateActivity(mainActivity);
+        update(UpdateType.TIMESTAMP, () -> tempActivity = null);
     }
 
     public static void setTimestamp() {
-        if (disabled) return;
-        if (core == null || !core.isOpen()) return;
-        if (mainActivity == null) return;
-
-        Titan.debug("Switching to new activity for timestamp");
+       Titan.debug("Switching to new activity for timestamp");
         tempActivity = generateActivity();
         if (tempActivity == null) return;
 
-        tempActivity.setDetails(mainActivity.getDetails());
-        tempActivity.setState(mainActivity.getState());
-
-        core.activityManager().updateActivity(tempActivity);
+        update(UpdateType.TIMESTAMP, () -> {
+            tempActivity.setDetails(mainActivity.getDetails());
+            tempActivity.setState(mainActivity.getState());
+        });
     }
 
     public static void updateWorld() {
-        if (disabled) return;
-        if (core == null || !core.isOpen()) return;
-        if (mainActivity == null) return;
-
-        mainActivity.setDetails(PlayerStates.getWorldDetails());
-        core.activityManager().updateActivity(mainActivity);
+        update(UpdateType.DETAILS, () -> mainActivity.setDetails(PlayerStates.getWorldDetails()));
     }
 
     public static void updateDetails(String details) {
-        if (disabled) return;
-        if (core == null || !core.isOpen()) return;
-        if (mainActivity == null) return;
-
-        if (details == null)
-            details = Strings.EMPTY;
-
-        mainActivity.setState(details);
-        core.activityManager().updateActivity(mainActivity);
+       update(UpdateType.STATE, () -> mainActivity.setState(details == null ? Strings.EMPTY : details));
     }
 
     public static Activity generateActivity() {
@@ -142,8 +125,34 @@ public class RichPresence {
         return activity;
     }
 
+    private static void runCallbacks() {
+        if (disabled) return;
+        if (core == null || !core.isOpen()) return;
+        if (mainActivity == null) return;
+
+        try {
+            for (UpdateType type : UpdateType.values()) {
+                Runnable runnable = updateQueues.remove(type);
+                if (runnable == null) continue;
+                runnable.run();
+            }
+            core.activityManager().updateActivity(tempActivity != null ? tempActivity : mainActivity);
+
+            core.runCallbacks();
+        } catch (Throwable throwable) {
+            if (throwable.getMessage() != null)
+                Titan.log(throwable.getMessage());
+        }
+    }
+
     private static void initEvents() {
-        ClientTickEvents.END_CLIENT_TICK.register(client -> RichPresence.update());
+        AtomicInteger tick = new AtomicInteger(0);
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (tick.getAndIncrement() % 5 == 0) {
+                tick.set(0);
+                new Thread(RichPresence::update).start();
+            }
+        });
 
         ClientPlayConnectionEvents.DISCONNECT.register(((handler, client) -> stop()));
     }
@@ -178,55 +187,14 @@ public class RichPresence {
         return false;
     }
 
-//    public static File downloadDiscordLibrary() throws IOException {
-//        String name = "discord_game_sdk";
-//        String suffix;
-//
-//        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-//        String arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
-//
-//        Titan.debug("Operating System: " + osName);
-//        Titan.debug("Arch: " + arch);
-//
-//        if (osName.contains("windows"))
-//            suffix = ".dll";
-//        else if (osName.contains("linux"))
-//            suffix = ".so";
-//        else if (osName.contains("mac os"))
-//            suffix = ".dylib";
-//        else
-//            throw new RuntimeException("cannot determine Operating System: " + osName);
-//
-//        if (arch.equals("amd64"))
-//            arch = "x86_64";
-//
-//        String zipPath = "lib/%s/%s%s".formatted(arch, name, suffix);
-//
-//        URL downloadUrl = new URL("https://dl-game-sdk.discordapp.net/2.5.6/discord_game_sdk.zip");
-//        HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
-//        connection.setRequestProperty("User-Agent", "discord-game-sdk4j (https://github.com/JnCrMx/discord-game-sdk4j)");
-//        ZipInputStream zin = new ZipInputStream(connection.getInputStream());
-//
-//        ZipEntry entry;
-//        while ((entry = zin.getNextEntry())!=null) {
-//            if (entry.getName().equals(zipPath)) {
-//                File tempDir = new File(System.getProperty("java.io.tmpdir"), "java-" + name + System.nanoTime());
-//                if (!tempDir.mkdir())
-//                    throw new IOException("Cannot create temporary directory");
-//                tempDir.deleteOnExit();
-//
-//                File temp = new File(tempDir, name + suffix);
-//                temp.deleteOnExit();
-//
-//                Files.copy(zin, temp.toPath());
-//
-//                zin.close();
-//                return temp;
-//            }
-//            zin.closeEntry();
-//        }
-//        zin.close();
-//        throw new NullPointerException("Could not find Discord Library");
-//    }
+    private static void update(UpdateType type, Runnable runnable) {
+        updateQueues.put(type, runnable);
+    }
+
+    private enum UpdateType {
+        STATE,
+        DETAILS,
+        TIMESTAMP
+    }
 
 }
