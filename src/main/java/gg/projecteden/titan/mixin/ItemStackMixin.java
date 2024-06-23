@@ -2,8 +2,11 @@ package gg.projecteden.titan.mixin;
 
 import gg.projecteden.titan.config.ConfigItem;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -21,7 +24,7 @@ import static gg.projecteden.titan.utils.Utils.getStoredItems;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin {
 
-    @Shadow public abstract boolean hasNbt();
+    @Shadow public abstract ComponentMap getComponents();
 
     @Shadow public abstract ItemStack copy();
 
@@ -30,19 +33,21 @@ public abstract class ItemStackMixin {
             .append(Text.literal("Shift").formatted(Formatting.YELLOW))
             .append(" to view contents").formatted(Formatting.DARK_AQUA);
 
-    @Inject(at = @At("RETURN"), method = "Lnet/minecraft/item/ItemStack;getTooltip"
-            + "(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/client/item/TooltipContext;)Ljava/util/List;")
-    private void addBackpackPreviewLore(PlayerEntity player, TooltipContext context, CallbackInfoReturnable<List<Text>> ci) {
+    @Inject(at = @At("RETURN"), method = "getTooltip")
+    private void addBackpackPreviewLore(Item.TooltipContext context, PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> ci) {
         if (!ConfigItem.DO_BACKPACK_PREVIEWS.getValue())
             return;
 
         if (!ConfigItem.PREVIEWS_REQUIRE_SHIFT.getValue() || Screen.hasShiftDown())
             return;
 
-        if (!this.hasNbt())
+        if (!this.getComponents().contains(DataComponentTypes.CUSTOM_DATA))
             return;
 
-        if (getStoredItems(this.copy()).isEmpty())
+        if (player == null)
+            return;
+
+        if (getStoredItems(player.getWorld().getRegistryManager(), this.copy()).isEmpty())
             return;
 
         var tooltip = ci.getReturnValue();

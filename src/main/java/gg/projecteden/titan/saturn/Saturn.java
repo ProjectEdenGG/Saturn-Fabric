@@ -71,8 +71,8 @@ public class Saturn {
 
 	public static void enable() {
 		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
-		if (!manager.getEnabledNames().contains("file/Saturn")) {
-			List<String> packs = new ArrayList<>(manager.getEnabledNames());
+		if (!manager.getEnabledIds().contains("file/Saturn")) {
+			List<String> packs = new ArrayList<>(manager.getEnabledIds());
 			packs.add("file/Saturn");
 			manager.setEnabledProfiles(packs);
 			MinecraftClient.getInstance().reloadResources();
@@ -81,8 +81,8 @@ public class Saturn {
 
 	public static void disable() {
 		ResourcePackManager manager = MinecraftClient.getInstance().getResourcePackManager();
-		if (manager.getEnabledNames().contains("file/Saturn")) {
-			List<String> packs = new ArrayList<>(manager.getEnabledNames());
+		if (manager.getEnabledIds().contains("file/Saturn")) {
+			List<String> packs = new ArrayList<>(manager.getEnabledIds());
 			packs.remove("file/Saturn");
 			manager.setEnabledProfiles(packs);
 			MinecraftClient.getInstance().reloadResources();

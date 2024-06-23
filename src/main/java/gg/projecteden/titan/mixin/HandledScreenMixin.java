@@ -8,16 +8,17 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.DyeableHorseArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4fStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -49,10 +50,7 @@ public class HandledScreenMixin {
 
     @Unique
     private void onRenderTooltipLast(DrawContext context, ItemStack stack, int x, int y, CallbackInfo ci) {
-        if (!stack.hasNbt())
-            return;
-
-        if (getStoredItems(stack).isEmpty()) {
+        if (getStoredItems(MinecraftClient.getInstance().player.getWorld().getRegistryManager(), stack).isEmpty()) {
             return;
         }
 
@@ -61,7 +59,7 @@ public class HandledScreenMixin {
 
     @Unique
     public void renderItemContentsPreview(ItemStack stack, int baseX, int baseY, DrawContext drawContext, CallbackInfo ci) {
-        DefaultedList<ItemStack> items = getStoredItems(stack);
+        DefaultedList<ItemStack> items = getStoredItems(MinecraftClient.getInstance().player.getWorld().getRegistryManager(), stack);
 
         InventoryOverlay.InventoryRenderType type = getType(stack);
         InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, items.size());
@@ -76,21 +74,18 @@ public class HandledScreenMixin {
             ci.cancel();
         }
 
-        if (ConfigItem.USE_BACKGROUND_COLORS.getValue() && stack.getItem() instanceof DyeableHorseArmorItem dyeable) {
-            if (!dyeable.hasColor(stack))
-                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            else {
-                Color color = new Color(dyeable.getColor(stack));
-                RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
-            }
+        if (ConfigItem.USE_BACKGROUND_COLORS.getValue() && stack.getComponents().contains(DataComponentTypes.DYED_COLOR)) {
+            Color color = new Color(stack.get(DataComponentTypes.DYED_COLOR).rgb());
+            RenderSystem.setShaderColor(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, 1f);
         }
-        else
+        else {
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        }
 
         DiffuseLighting.disableGuiDepthLighting();
 
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
+        Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushMatrix();
         matrixStack.translate(0, 0, 500);
         RenderSystem.applyModelViewMatrix();
 
@@ -101,13 +96,16 @@ public class HandledScreenMixin {
         Inventory inv = getAsInventory(items);
         InventoryOverlay.renderInventoryStacks(type, inv, x + props.slotOffsetX, y + props.slotOffsetY, props.slotsPerRow, 0, -1, MinecraftClient.getInstance(), drawContext);
 
-        matrixStack.pop();
+        matrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
     }
 
     @Unique
     private InventoryOverlay.InventoryRenderType getType(ItemStack stack) {
-        NbtCompound nbt = stack.getNbt();
+        NbtComponent component = stack.get(DataComponentTypes.CUSTOM_DATA);
+        if (component == null) return null;
+
+        NbtCompound nbt = component.copyNbt();
         if (nbt == null)
             return InventoryOverlay.InventoryRenderType.FIXED_27;
 

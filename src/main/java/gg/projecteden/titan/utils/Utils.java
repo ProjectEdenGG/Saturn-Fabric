@@ -6,9 +6,11 @@ import joptsimple.internal.Strings;
 import lombok.SneakyThrows;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.collection.DefaultedList;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -100,11 +102,11 @@ public class Utils {
 	}
 
 
-	public static DefaultedList<ItemStack> getStoredItems(ItemStack stack) {
-		if (!stack.hasNbt())
+	public static DefaultedList<ItemStack> getStoredItems(DynamicRegistryManager registryManager, ItemStack stack) {
+		if (!stack.contains(DataComponentTypes.CUSTOM_DATA))
 			return DefaultedList.of();
 
-		NbtCompound nbt = stack.getNbt();
+		NbtCompound nbt = stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
 
 		if (nbt != null && nbt.contains("ProjectEden")) {
 			NbtCompound projectEden = nbt.getCompound("ProjectEden");
@@ -115,10 +117,7 @@ public class Utils {
 				final int count = tagList.size();
 
 				for (int i = 0; i < count; ++i) {
-					ItemStack _stack = ItemStack.fromNbt(tagList.getCompound(i));
-
-					if (!_stack.isEmpty())
-						items.add(_stack);
+					ItemStack.fromNbt(registryManager, tagList.getCompound(i)).ifPresent(items::add);
 				}
 
 				return items;

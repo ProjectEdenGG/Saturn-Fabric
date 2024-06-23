@@ -62,7 +62,7 @@ public class TitleScreenMixin extends Screen {
 			if (TitanUpdater.updateStatus == UpdateStatus.AVAILABLE && Screen.hasShiftDown()) {
 				Util.getOperatingSystem().open(Titan.MODRINTH_URL);
 			} else
-				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false);
+				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false, null);
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action)
 				.dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20)
