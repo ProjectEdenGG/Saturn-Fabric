@@ -25,7 +25,7 @@ import static gg.projecteden.titan.Titan.MOD_ID;
 public class ServerClientMessaging {
 
 	public record TitanPacket(String packet) implements CustomPayload {
-		private static final Identifier NETWORKING_CHANNEL = new Identifier(MOD_ID, "networking");
+		private static final Identifier NETWORKING_CHANNEL = Identifier.of(MOD_ID, "networking");
 
 		public static final CustomPayload.Id<TitanPacket> PACKET_ID = new CustomPayload.Id<>(NETWORKING_CHANNEL);
 		public static final PacketCodec<RegistryByteBuf, TitanPacket> PACKET_CODEC = PacketCodecs.STRING.xmap(TitanPacket::new, TitanPacket::getPacket).cast();

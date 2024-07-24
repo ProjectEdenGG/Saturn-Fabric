@@ -65,7 +65,7 @@ public class TitleScreenMixin extends Screen {
 				ConnectScreen.connect(this, MinecraftClient.getInstance(), ServerAddress.parse("projecteden.gg"), TitleScreenMixin.serverInfo, false, null);
 		};
 		this.addDrawableChild(ButtonWidget.builder(Text.of(""), action)
-				.dimensions(this.width / 2 - 100 + 205, y + spacingY, 20, 20)
+				.dimensions(this.width / 2 - 100 + 204, y + spacingY, 20, 20)
 				.tooltip(TitanUpdater.updateStatus.getTitleScreenTooltip())
 				.build());
 
@@ -79,7 +79,7 @@ public class TitleScreenMixin extends Screen {
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			context.getMatrices().push();
 			context.getMatrices().scale(1f, 1F, 1F);
-			context.drawTexture(PE_LOGO_IDEN, this.width / 2 - 100 + 205, finalY + spacingY + (spacingY / 2), 0.0F, 0.0F, 20, 20, 20, 20);
+			context.drawTexture(PE_LOGO_IDEN, this.width / 2 - 100 + 204, finalY + spacingY + (spacingY / 2), 0.0F, 0.0F, 20, 20, 20, 20);
 			context.getMatrices().pop();
 		});
 

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.config.annotations.Disabled;
 import gg.projecteden.titan.config.annotations.Group;
 import gg.projecteden.titan.config.annotations.Name;
@@ -112,6 +113,7 @@ public class Config {
 
 	public static void load() {
 		JsonObject json = getJsonObject(CONFIG_FILE);
+		Titan.log(json.toString());
 
 		for (Field field : ConfigItem.getAll()) {
 			try {
@@ -126,25 +128,26 @@ public class Config {
 
 					if (json.has(group)) {
 						JsonObject jsonObject = json.getAsJsonObject(group);
-						if (jsonObject.has(name))
+						if (jsonObject.has(name)) {
 							load(item, jsonObject, name);
-						else
-							load(item, jsonObject, field.getName());
+							continue;
+						}
 					}
 					else {
-						if (json.has(name))
+						if (json.has(name)) {
 							load(item, json, name);
+							continue;
+						}
 					}
 				}
-				else {
-					String group = field.getAnnotation(Group.class).value();
-					String name = field.getAnnotation(Name.class).config().isEmpty() ? field.getName() : field.getAnnotation(Name.class).config();
-					name = name.toLowerCase().replace("_", "-").replace(" ", "-");
-					if (json.has(group))
-						load(item, json.getAsJsonObject(group), name);
-					else
-						load(item, json, name);
-				}
+
+				String group = field.getAnnotation(Group.class).value();
+				String name = field.getAnnotation(Name.class).config().isEmpty() ? field.getName() : field.getAnnotation(Name.class).config();
+				name = name.toLowerCase().replace("_", "-").replace(" ", "-");
+				if (json.has(group))
+					load(item, json.getAsJsonObject(group), name);
+				else
+					load(item, json, name);
 
 
 			} catch (Exception ex) {
@@ -167,6 +170,7 @@ public class Config {
             case STRING -> JsonHelper.getString(json, path);
             case UNKNOWN -> null;
         };
+		Titan.log(path, val);
 
 		item.setValue(val);
 	}

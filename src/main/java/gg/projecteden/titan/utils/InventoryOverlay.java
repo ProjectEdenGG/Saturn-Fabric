@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 
 public class InventoryOverlay {
-    public static final Identifier TEXTURE_54 = new Identifier("textures/gui/container/generic_54.png");
+    public static final Identifier TEXTURE_54 = Identifier.ofVanilla("textures/gui/container/generic_54.png");
 
     public static final InventoryProperties INV_PROPS_TEMP = new InventoryProperties();
 
@@ -20,11 +20,11 @@ public class InventoryOverlay {
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.applyModelViewMatrix();
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 
         int rows = switch (type) {
             case FIXED_27 -> 0;
@@ -41,7 +41,7 @@ public class InventoryOverlay {
         RenderSystem.enableDepthTest();
         RenderSystem.enableBlend();
 
-        tessellator.draw();
+        BufferRenderer.drawWithGlobalProgram(buffer.end());
     }
 
     public static void drawTexturedRectBatched(int x, int y, int u, int v, int width, int height, BufferBuilder buffer) {
@@ -51,10 +51,10 @@ public class InventoryOverlay {
     public static void drawTexturedRectBatched(int x, int y, int u, int v, int width, int height, float zLevel, BufferBuilder buffer) {
         float pixelWidth = 0.00390625F;
 
-        buffer.vertex(x        , y + height, zLevel).texture( u          * pixelWidth, (v + height) * pixelWidth).next();
-        buffer.vertex(x + width, y + height, zLevel).texture((u + width) * pixelWidth, (v + height) * pixelWidth).next();
-        buffer.vertex(x + width, y         , zLevel).texture((u + width) * pixelWidth,  v           * pixelWidth).next();
-        buffer.vertex(x        , y         , zLevel).texture( u          * pixelWidth,  v           * pixelWidth).next();
+        buffer.vertex(x        , y + height, zLevel).texture( u          * pixelWidth, (v + height) * pixelWidth);
+        buffer.vertex(x + width, y + height, zLevel).texture((u + width) * pixelWidth, (v + height) * pixelWidth);
+        buffer.vertex(x + width, y         , zLevel).texture((u + width) * pixelWidth,  v           * pixelWidth);
+        buffer.vertex(x        , y         , zLevel).texture( u          * pixelWidth,  v           * pixelWidth);
     }
 
     public static void renderInventoryBackground(int x, int y, int h1, int h2, BufferBuilder buffer) {
@@ -73,11 +73,10 @@ public class InventoryOverlay {
      * Don't hold on to the instance, as the values will mutate when this
      * method is called again!
      * @param type
-     * @param totalSlots
      * @return
      */
-    public static InventoryProperties getInventoryPropsTemp(InventoryRenderType type, int totalSlots) {
-        totalSlots = Integer.parseInt(type.name().replace("FIXED_", ""));
+    public static InventoryProperties getInventoryPropsTemp(InventoryRenderType type) {
+        int totalSlots = Integer.parseInt(type.name().replace("FIXED_", ""));
 
         INV_PROPS_TEMP.slotsPerRow = 9;
         INV_PROPS_TEMP.slotOffsetX = 8;

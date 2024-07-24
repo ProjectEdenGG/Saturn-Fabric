@@ -62,7 +62,7 @@ public class HandledScreenMixin {
         DefaultedList<ItemStack> items = getStoredItems(MinecraftClient.getInstance().player.getWorld().getRegistryManager(), stack);
 
         InventoryOverlay.InventoryRenderType type = getType(stack);
-        InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, items.size());
+        InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type);
 
         int screenWidth = MinecraftClient.getInstance().getWindow().getScaledWidth();
         int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();

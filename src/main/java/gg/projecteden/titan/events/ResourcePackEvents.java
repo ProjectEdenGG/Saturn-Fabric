@@ -62,7 +62,7 @@ public class ResourcePackEvents {
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			@Override
 			public Identifier getFabricId() {
-				return new Identifier(MOD_ID, "saturn");
+				return Identifier.of(MOD_ID, "saturn");
 			}
 
 			long lastForcedReload = 0L;
