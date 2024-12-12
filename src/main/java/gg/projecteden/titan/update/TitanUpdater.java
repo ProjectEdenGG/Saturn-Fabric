@@ -65,7 +65,7 @@ public class TitanUpdater {
 			Titan.log("Error while getting Modrinth version");
 			e.printStackTrace();
 		}
-		return null;
+		return new ModrinthVersion[0];
 	}
 
 }
