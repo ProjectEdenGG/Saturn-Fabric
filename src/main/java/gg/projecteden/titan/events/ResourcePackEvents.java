@@ -17,7 +17,6 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -68,7 +67,7 @@ public class ResourcePackEvents {
 			long lastForcedReload = 0L;
 
 			@Override
-			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+			public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Executor prepareExecutor, Executor applyExecutor) {
 				if (isOnEden() && (Saturn.getUpdater() == SaturnUpdater.GIT || SATURN_UPDATE_INSTANCES.getValue() != SaturnUpdater.Mode.START_UP)) {
 					Saturn.queueProcess(() -> {
 						if (Saturn.update()) {
@@ -83,7 +82,7 @@ public class ResourcePackEvents {
 						ServerClientMessaging.send(new Versions());
 					});
 				}
-				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareProfiler, applyProfiler, prepareExecutor, applyExecutor);
+				return SimpleSynchronousResourceReloadListener.super.reload(synchronizer, manager, prepareExecutor, applyExecutor);
 			}
 
 			@Override

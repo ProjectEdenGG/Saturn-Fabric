@@ -1,17 +1,22 @@
 package gg.projecteden.titan.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.saturn.Saturn;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.pack.PackListWidget;
 import net.minecraft.client.gui.screen.pack.PackScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextIconButtonWidget;
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,12 +27,17 @@ import static gg.projecteden.titan.Titan.UPDATE_AVAILABLE;
 @Mixin(PackScreen.class)
 public class OptionsScreenMixin extends Screen {
 
+	@Shadow @Final private ThreePartsLayoutWidget layout;
+	@Shadow private PackListWidget availablePackList;
+	@Shadow private PackListWidget selectedPackList;
+	@Unique
 	private boolean updateAvailable;
-	private String saturnVersion;
-	private Element button;
+	@Unique
+	private TextIconButtonWidget button;
+	@Unique
+	private Drawable updateIcon;
 
-	@Shadow ThreePartsLayoutWidget layout;
-
+    @Unique
 	ButtonWidget.PressAction action = button -> {
 		if (updateAvailable) {
 			Saturn.queueProcess(() -> {
@@ -45,7 +55,7 @@ public class OptionsScreenMixin extends Screen {
 	@Inject(method = "init", at = @At("RETURN"))
 	public void drawSaturnUpdateChecker(CallbackInfo ci) {
 		updateAvailable = Saturn.checkForUpdates();
-		saturnVersion = Saturn.shortVersion();
+        String saturnVersion = Saturn.shortVersion();
 
 		String tooltipText = "Saturn installed with Titan\n" +
 				"Version: " + saturnVersion;
@@ -57,30 +67,31 @@ public class OptionsScreenMixin extends Screen {
                         """;
 		}
 
-		this.button = this.addDrawableChild(ButtonWidget.builder(Text.of(""), button -> action.onPress(button))
-				.dimensions(this.width - 26, 6, 20, 20)
-				.tooltip(Tooltip.of(Text.literal(tooltipText)))
+		button = this.addDrawableChild(TextIconButtonWidget.builder(Text.of(""), action, true)
+				.width(20)
+				.texture(PE_LOGO_IDEN, 20, 20)
 				.build());
+		button.setPosition(this.width - 26, 6);
+		button.setTooltip(Tooltip.of(Text.literal(tooltipText)));
 
-		this.addDrawable((context, mouseX, mouseY, delta) -> {
-			RenderSystem.setShaderTexture(0, PE_LOGO_IDEN);
-			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-			context.getMatrices().push();
-			context.getMatrices().scale(1f, 1F, 1F);
-			context.drawTexture(PE_LOGO_IDEN, this.width - 26, 6, 0.0F, 0.0F, 20, 20, 20, 20);
-			context.getMatrices().pop();
+		if (updateAvailable || Titan.debug)
+			renderUpdateIcon();
+		else
+			updateIcon = null;
+
+	}
+
+	@Inject(method = "refreshWidgetPositions", at = @At("RETURN"))
+	void refreshWidgetPositions(CallbackInfo ci) {
+		if (button != null)
+			button.setPosition(this.width - 26, 6);
+	}
+
+	@Unique
+	private void renderUpdateIcon() {
+		updateIcon = this.addDrawable((context, mouseX, mouseY, delta) -> {
+			context.drawGuiTexture(RenderLayer::getGuiTextured, UPDATE_AVAILABLE, this.width - 8, 0, 5, 20);
 		});
-
-		if (updateAvailable) {
-			this.addDrawable((context, mouseX, mouseY, delta) -> {
-				RenderSystem.setShaderTexture(0, UPDATE_AVAILABLE);
-				RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-				context.getMatrices().push();
-				context.getMatrices().scale(0.4F, 0.4F, 0.4F);
-				context.drawTexture(UPDATE_AVAILABLE, (int) (this.width * (1 / .4f)) - 26, 6, 0.0F, 0.0F, 9, 40, 9, 40);
-				context.getMatrices().pop();
-			});
-		}
 	}
 
 }

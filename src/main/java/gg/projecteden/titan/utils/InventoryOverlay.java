@@ -2,7 +2,11 @@ package gg.projecteden.titan.utils;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import gg.projecteden.titan.Titan;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,8 +24,7 @@ public class InventoryOverlay {
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ZERO);
 
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        RenderSystem.applyModelViewMatrix();
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
@@ -97,20 +100,40 @@ public class InventoryOverlay {
             maxSlots = slots;
         }
 
-        for (int slot = startSlot, i = 0; slot < slots && i < maxSlots;) {
-            for (int column = 0; column < slotsPerRow && slot < slots && i < maxSlots; ++column, ++slot, ++i) {
-                ItemStack stack = inv.getStack(slot);
+        Titan.debug("RenderInventoryStacks: " + maxSlots);
 
-                if (stack.isEmpty() == false) {
-                    renderStackAt(stack, x, y, 1, mc, drawContext);
-                }
+        for (int slot = startSlot; slot < maxSlots;) {
+            ItemStack stack = inv.getStack(slot).copy();
 
-                x += 18;
+            if (!stack.isEmpty())
+                renderStackAt(stack, x, y, 1, mc, drawContext);
+
+            x += 18;
+            slot++;
+
+            if (slot % slotsPerRow == 0) {
+                Titan.debug("Rendering on next row");
+                x = startX;
+                y += 18;
             }
-
-            x = startX;
-            y += 18;
+            else
+                Titan.debug("Rendering on next column");
         }
+
+//        for (int slot = startSlot, i = 0; slot < slots && i < maxSlots;) {
+//            for (int column = 0; column < slotsPerRow && slot < slots && i < maxSlots; ++column, ++slot, ++i) {
+//                ItemStack stack = inv.getStack(slot);
+//
+//                if (!stack.isEmpty()) {
+//                    renderStackAt(stack, x, y, 1, mc, drawContext);
+//                }
+//
+//                x += 18;
+//            }
+//
+//            x = startX;
+//            y += 18;
+//        }
     }
 
     public static void renderStackAt(ItemStack stack, float x, float y, float scale, MinecraftClient mc, DrawContext drawContext) {
@@ -122,10 +145,12 @@ public class InventoryOverlay {
         DiffuseLighting.enableGuiDepthLighting();
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
-        drawContext.drawItem(stack, 0, 0);
+        drawContext.drawItem(stack.copy(), 0, 0);
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        drawContext.drawItemInSlot( mc.textRenderer, stack, 0, 0);
+        Titan.debug("Stack count: " + stack.getCount());
+        drawContext.drawStackOverlay(mc.textRenderer, stack.copyWithCount(stack.getCount()), 0, 0);
+        drawContext.draw();
 
         RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         matrixStack.pop();
@@ -139,10 +164,14 @@ public class InventoryOverlay {
         public int slotOffsetY = 8;
     }
 
+    @Getter
+    @AllArgsConstructor
     public enum InventoryRenderType {
-        FIXED_27,
-        FIXED_36,
-        FIXED_45,
-        FIXED_54;
+        FIXED_27(27),
+        FIXED_36(36),
+        FIXED_45(45),
+        FIXED_54(54);
+
+        final int maxSlots;
     }
 }

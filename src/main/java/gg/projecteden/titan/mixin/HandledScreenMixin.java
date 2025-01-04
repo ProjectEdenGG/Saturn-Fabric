@@ -36,7 +36,7 @@ public class HandledScreenMixin {
     @Shadow @Nullable protected Slot focusedSlot;
 
     @Inject(method = "drawMouseoverTooltip", at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
-            target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;II)V"), cancellable = true)
+            target = "Lnet/minecraft/client/gui/DrawContext;drawTooltip(Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/util/Identifier;)V"), cancellable = true)
     private void onRenderTooltip(DrawContext drawContext, int x, int y, CallbackInfo ci) {
         if (!ConfigItem.DO_BACKPACK_PREVIEWS.getValue())
             return;
@@ -87,17 +87,15 @@ public class HandledScreenMixin {
         Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.pushMatrix();
         matrixStack.translate(0, 0, 500);
-        RenderSystem.applyModelViewMatrix();
 
         InventoryOverlay.renderInventoryBackground(type, x, y);
 
         DiffuseLighting.enableGuiDepthLighting();
 
         Inventory inv = getAsInventory(items);
-        InventoryOverlay.renderInventoryStacks(type, inv, x + props.slotOffsetX, y + props.slotOffsetY, props.slotsPerRow, 0, -1, MinecraftClient.getInstance(), drawContext);
+        InventoryOverlay.renderInventoryStacks(type, inv, x + props.slotOffsetX, y + props.slotOffsetY, props.slotsPerRow, 0, type.getMaxSlots(), MinecraftClient.getInstance(), drawContext);
 
         matrixStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
     }
 
     @Unique

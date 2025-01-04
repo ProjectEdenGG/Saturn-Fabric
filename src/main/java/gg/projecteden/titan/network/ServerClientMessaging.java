@@ -6,17 +6,19 @@ import com.google.gson.JsonObject;
 import gg.projecteden.titan.Titan;
 import gg.projecteden.titan.network.models.PluginMessage;
 import gg.projecteden.titan.network.models.Serverbound;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.encoding.StringEncoding;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,10 +30,27 @@ public class ServerClientMessaging {
 		private static final Identifier NETWORKING_CHANNEL = Identifier.of(MOD_ID, "networking");
 
 		public static final CustomPayload.Id<TitanPacket> PACKET_ID = new CustomPayload.Id<>(NETWORKING_CHANNEL);
-		public static final PacketCodec<RegistryByteBuf, TitanPacket> PACKET_CODEC = PacketCodecs.STRING.xmap(TitanPacket::new, TitanPacket::getPacket).cast();
+		public static final PacketCodec<RegistryByteBuf, TitanPacket> PACKET_CODEC = PacketCodec.tuple(new PacketCodec<ByteBuf, String>() {
+			public String decode(ByteBuf byteBuf) {
+				Titan.debug("Decoding...");
+				Titan.debug("Readable bytes: " + byteBuf.readableBytes());
+				byte[] bytes = new byte[byteBuf.readableBytes()];
+				byteBuf.readBytes(bytes);
+				Titan.debug("Raw: " + Arrays.toString(bytes));
+				String string = new String(bytes);
+				Titan.debug("String: " + new String(bytes));
+				string = string.substring(string.indexOf("{"));
+				return string;
+			}
+
+			public void encode(ByteBuf byteBuf, String string) {
+				Titan.debug("Encoding...");
+				StringEncoding.encode(byteBuf, string, 10000);
+			}
+		}, TitanPacket::packet, TitanPacket::new);
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public CustomPayload.Id<? extends CustomPayload> getId() {
 			return PACKET_ID;
 		}
 
@@ -40,8 +59,9 @@ public class ServerClientMessaging {
 		}
 
 		public void receive() {
-			Titan.debug("Received server message: " + packet);
-			JsonObject json = GSON.fromJson(packet, JsonObject.class);
+			Titan.debug("Received server message: " + getPacket());
+			Titan.debug("Raw: " + packet);
+			JsonObject json = GSON.fromJson(getPacket(), JsonObject.class);
 
 			if (json == null || json.isEmpty()) {
 				Titan.debug("JSON is empty");
@@ -59,9 +79,7 @@ public class ServerClientMessaging {
 		}
 	}
 
-
-
-	public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	public final static Gson GSON = new GsonBuilder().create();
 
 	public static final List<Serverbound> toSend = new ArrayList<>();
 
@@ -106,7 +124,9 @@ public class ServerClientMessaging {
 		PayloadTypeRegistry.playC2S().register(TitanPacket.PACKET_ID, TitanPacket.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(TitanPacket.PACKET_ID, TitanPacket.PACKET_CODEC);
 
-		ClientPlayNetworking.registerGlobalReceiver(TitanPacket.PACKET_ID, (payload, context) -> payload.receive());
+		ClientPlayNetworking.registerGlobalReceiver(TitanPacket.PACKET_ID, (payload, context) -> {
+			context.client().execute(payload::receive);
+		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> ServerClientMessaging.flush());
 	}

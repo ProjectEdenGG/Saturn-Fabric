@@ -24,9 +24,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
@@ -113,12 +111,22 @@ public class Utils {
 
 			if (projectEden.contains("Items")) {
 				DefaultedList<ItemStack> items = DefaultedList.of();
+				Map<Integer, NbtCompound> slotMap = new HashMap<>();
 				NbtList tagList = projectEden.getList("Items", 10);
 				final int count = tagList.size();
 
-				for (int i = 0; i < count; ++i) {
-					ItemStack.fromNbt(registryManager, tagList.getCompound(i)).ifPresent(items::add);
+				for (int i = 0; i < count; i++) {
+					int slot = tagList.getCompound(i).getByte("Slot");
+					slotMap.put(slot, tagList.getCompound(i));
 				}
+
+				int maxSlots = slotMap.keySet().stream().max(Integer::compareTo).orElse(0);
+
+				for (int i = 0; i <= maxSlots; i++)
+					if (!slotMap.containsKey(i))
+						items.add(ItemStack.EMPTY);
+					else
+						ItemStack.fromNbt(registryManager, slotMap.get(i)).ifPresent(items::add);
 
 				return items;
 			}
