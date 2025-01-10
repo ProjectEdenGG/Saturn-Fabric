@@ -1,5 +1,6 @@
 package gg.projecteden.titan.discord;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,9 @@ public class PlayerStates {
     private static boolean vanished;
     @Getter
     private static boolean AFK;
+    @Getter
+    @Setter
+    private static ChatChannel channel = ChatChannel.UNKNOWN;
 
     public static void setVanished(boolean vanished) {
         boolean oldVanished = PlayerStates.vanished;
@@ -60,6 +64,31 @@ public class PlayerStates {
             case "server" -> "Hub";
             default -> camelCase(worldGroup);
         };
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public enum ChatChannel {
+        GLOBAL("#00aa00", "g"),
+        LOCAL("#ffff55", "l"),
+        STAFF("#000000", "s"),
+        OPERATOR("#00aaaa", "o"),
+        ADMIN("#5555ff", "a"),
+        MINIGAMES("#00aaaa", "m"),
+        CREATIVE("#55ffff", "c"),
+        SKYBLOCK("#ffaa00", "b"),
+        PARTY("#ff55ff", "p"),
+        PRIVATE("#55ffff", null),
+        UNKNOWN(null, null);
+
+        final String hex;
+        String shortcut;
+
+        public int getColor() {
+            int rgb = Integer.parseInt(hex.substring(1), 16);
+            // Add the alpha channel (fully opaque: 0xFF)
+            return (0xFF << 24) | rgb;
+        }
     }
 
 }

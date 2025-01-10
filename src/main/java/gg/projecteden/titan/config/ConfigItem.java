@@ -110,6 +110,11 @@ public class ConfigItem<T> {
         }
     };
 
+    @Group(Utilities)
+    @Name("Chat Channel Renderer")
+    @Description("Should your current chat channel be rendered in chat")
+    public static final ConfigItem<Boolean> CHAT_CHANNEL_RENDER = new ConfigItem<>(true);
+
     @Group(Backpacks)
     @Name("Show Backpack Previews")
     @Description("Should Titan render previews of Backpacks\nwhen hovered in your inventory?")

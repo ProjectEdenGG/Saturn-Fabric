@@ -12,6 +12,7 @@ public class UpdateState extends Clientbound {
     String mechanic;
     Boolean vanished;
     Boolean afk;
+    String channel;
 
     @Override
     public void onReceive() {
@@ -35,8 +36,11 @@ public class UpdateState extends Clientbound {
             RichPresence.setTimestamp();
         }
 
-        if (afk != null) {
+        if (afk != null)
             PlayerStates.setAFK(afk);
-        }
+
+        if (channel != null)
+            try { PlayerStates.setChannel(PlayerStates.ChatChannel.valueOf(channel.toUpperCase())); }
+            catch (Exception ignored) { PlayerStates.setChannel(PlayerStates.ChatChannel.UNKNOWN); }
     }
 }
