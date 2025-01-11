@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static gg.projecteden.titan.utils.Utils.isOnEden;
 
@@ -45,33 +46,50 @@ public class ChatScreenMixin extends Screen {
     }
 
     @Unique
+    private static final List<String> CHANNEL_ALIASES = Arrays.asList("/ch", "/chat", "/channel");
+    @Unique
+    private static final List<String> MESSAGE_ALIASES = Arrays.asList("/message", "/m", "/msg", "/w", "/whisper", "/t", "/tell", "/pm", "/dm", "/r", "/reply");
+
+    @Unique
     private PlayerStates.ChatChannel detectQuickMessage() {
         String chat = this.chatField.getText().trim();
 
-        if (chat.startsWith("/ch qm ")) {
-            String[] parts = chat.split(" ", 4);
-            if (parts.length >= 3) {
-                String shortcut = parts[2];
-                return Arrays.stream(PlayerStates.ChatChannel.values())
-                        .filter(channel -> shortcut.equals(channel.getShortcut()))
-                        .findFirst()
-                        .orElse(null);
+        if (chat.isBlank())
+            return null;
+
+        for (String prefix : CHANNEL_ALIASES) {
+            if (chat.startsWith(prefix + " qm ")) {
+                String[] parts = chat.split(" ", 4);
+
+                if (parts.length >= 3) {
+                    String target = parts[2];
+
+                    return Arrays.stream(PlayerStates.ChatChannel.values())
+                            .filter(channel -> target.equals(channel.getShortcut()) ||
+                                    target.equalsIgnoreCase(channel.name()))
+                            .findFirst()
+                            .orElse(null);
+                }
+            }
+
+            if (chat.startsWith(prefix + " ")) {
+                String[] parts = chat.split(" ", 3);
+
+                if (parts.length == 3) {
+                    String target = parts[1];
+
+                    return Arrays.stream(PlayerStates.ChatChannel.values())
+                            .filter(channel -> target.equals(channel.getShortcut()) ||
+                                    target.equalsIgnoreCase(channel.name()))
+                            .findFirst()
+                            .orElse(null);
+                }
             }
         }
 
-        if (chat.startsWith("/ch ")) {
-            String[] parts = chat.split(" ", 3);
-            if (parts.length == 3) {
-                String shortcut = parts[1];
-                return Arrays.stream(PlayerStates.ChatChannel.values())
-                        .filter(channel -> shortcut.equals(channel.getShortcut()))
-                        .findFirst()
-                        .orElse(null);
-            }
-        }
-
-        if (chat.startsWith("/msg "))
-            return PlayerStates.ChatChannel.PRIVATE;
+        for (String prefix : MESSAGE_ALIASES)
+            if (chat.startsWith(prefix + " "))
+                return PlayerStates.ChatChannel.PRIVATE;
 
         return null;
     }
